@@ -1,4 +1,4 @@
-import { addDoc, collection, doc, getDoc, serverTimestamp } from "firebase/firestore";
+import { addDoc, collection, doc, getDoc, getDocs, query, serverTimestamp, where } from "firebase/firestore";
 import { db } from "../config/firebase";
 
 // fetch setting constants
@@ -33,5 +33,27 @@ export const createExpense = async (values = {}) => {
         return docRef.id;
     } catch (error) {
         console.error("Something went wrong while adding expense => ",error);
+    }
+};
+
+export const fetchExpenses = async (range = {}) => {
+    try {
+        let conditions = [];
+        if(range?.fromDate){
+            conditions.push(where('date', '>=', range?.fromDate));
+        }
+        if(range?.toDate){
+            conditions.push(where('date', '<=', range?.toDate));
+        }
+        const colRef = collection(db, 'expenses');
+        const queryRef = query(colRef, ...conditions);
+        const querySnapshot = await getDocs(queryRef);
+        const data = querySnapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+        }));
+        return data;
+    } catch (error) {
+        console.error("Something went wrong while fetching expenses => ",error);
     }
 };
