@@ -6,6 +6,7 @@ import { Autocomplete, Box, Button, FormControl, FormHelperText, InputLabel, Men
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFnsV3";
 import { CreateDropdownData } from "../../utils/common";
+import { createExpense } from "../../services/expenseServices";
 
 export const AddExpenseForm = ({ settings }) => {
   const { expenseCategories: categories, user, categoryTooltips } = settings;
@@ -16,7 +17,13 @@ export const AddExpenseForm = ({ settings }) => {
     initialValues: initialValues,
     validationSchema: expenseValidationSchema,
     onSubmit: async (values) => {
-      console.log("form values----->", values);
+      await createExpense(values)
+        .then((res) => {
+          console.log("Expense added successfully -> ", res);
+        })
+        .catch((err) => {
+          console.error("Something went wrong -> ", err);
+        })
     },
   });
 
