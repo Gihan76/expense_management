@@ -16,10 +16,11 @@ export const AddExpenseForm = ({ settings }) => {
   const formik = useFormik({
     initialValues: initialValues,
     validationSchema: expenseValidationSchema,
-    onSubmit: async (values) => {
+    onSubmit: async (values, {resetForm}) => {
       await createExpense(values)
         .then((res) => {
           console.log("Expense added successfully -> ", res);
+          resetForm();
         })
         .catch((err) => {
           console.error("Something went wrong -> ", err);

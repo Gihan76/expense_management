@@ -1,4 +1,4 @@
-import { addDoc, collection, doc, getDoc, getDocs, query, serverTimestamp, where } from "firebase/firestore";
+import { addDoc, collection, doc, getDoc, onSnapshot, query, serverTimestamp, where } from "firebase/firestore";
 import { db } from "../config/firebase";
 
 // fetch setting constants
@@ -36,7 +36,8 @@ export const createExpense = async (values = {}) => {
     }
 };
 
-export const fetchExpenses = async (range = {}) => {
+// fetch realtime expenses
+export const fetchExpenses = async (callback, range = {}) => {
     try {
         let conditions = [];
         if(range?.fromDate){
@@ -47,13 +48,17 @@ export const fetchExpenses = async (range = {}) => {
         }
         const colRef = collection(db, 'expenses');
         const queryRef = query(colRef, ...conditions);
-        const querySnapshot = await getDocs(queryRef);
-        const data = querySnapshot.docs.map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
-        }));
-        return data;
+
+        const unsubscribe = onSnapshot(queryRef, (querySnapshot) => {
+            const data = querySnapshot.docs.map((doc) => ({
+                id: doc.id,
+                ...doc.data(),
+            }));
+            callback(data);
+        });
+        return unsubscribe;
     } catch (error) {
         console.error("Something went wrong while fetching expenses => ",error);
+        return () => {};
     }
 };

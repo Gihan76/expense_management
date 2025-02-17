@@ -9,7 +9,6 @@ export const ExpensesTable = memo(({ settings, withinRange }) => {
     {
       field: "date",
       headerName: "Date",
-      flex: 1,
       align: "left",
       headerAlign: "left",
       valueFormatter: (value) => {
@@ -25,16 +24,18 @@ export const ExpensesTable = memo(({ settings, withinRange }) => {
     {
       field: "title",
       headerName: "Expense",
-      flex: 1,
       align: "left",
       headerAlign: "left",
+      width: 200,
+      flex: 1
     },
     {
       field: "category",
       headerName: "Type",
-      flex: 1,
       align: "left",
       headerAlign: "left",
+      width: 150,
+      flex: 1,
       valueFormatter: (value) => {
         return expenseCategories?.[value];
       },
@@ -42,15 +43,14 @@ export const ExpensesTable = memo(({ settings, withinRange }) => {
     {
       field: "amount",
       headerName: "Quantity",
-      flex: 1,
       align: "left",
       headerAlign: "left",
+      width: 80
     },
     {
       field: "price",
       headerName: "Price",
       type: "number",
-      flex: 1,
       align: "left",
       headerAlign: "left",
       valueFormatter: (value) => {
@@ -60,9 +60,9 @@ export const ExpensesTable = memo(({ settings, withinRange }) => {
     {
       field: "createdBy",
       headerName: "Expensed By",
-      flex: 1,
       align: "left",
       headerAlign: "left",
+      width: 110,
       valueFormatter: (value) => {
         return user?.[value];
       },
@@ -83,19 +83,27 @@ export const ExpensesTable = memo(({ settings, withinRange }) => {
   );
 
   useEffect(() => {
-    (async () => {
-      const data = await fetchExpenses();
-      setTableData(data);
-    })();
+    const unsubscribe = fetchExpenses((data) => {
+        setTableData(data);
+    }, {});
+    return () => {
+      if (unsubscribe && typeof unsubscribe === "function") {
+        unsubscribe();
+      }
+    };
   }, []);
 
   useEffect(() => {
-    (async() => {
-        if(Object.keys(withinRange).length){
-            const data = await fetchExpenses(withinRange);
-            setTableData(data);
+    if (Object.keys(withinRange).length) {
+      const unsubscribe = fetchExpenses((data) => {
+        setTableData(data);
+      }, withinRange);
+      return () => {
+        if (unsubscribe && typeof unsubscribe === "function") {
+          unsubscribe();
         }
-    })();
+      };
+    }
   }, [withinRange]);
 
 
