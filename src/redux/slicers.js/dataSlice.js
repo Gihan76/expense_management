@@ -2,7 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
     settings: {},
-    expenseEditFormData: {},
+    expenseFormData: {},
 }
 
 export const dataSlice = createSlice({
@@ -12,18 +12,18 @@ export const dataSlice = createSlice({
         setSettingsData: (state, action) => {
             state.settings = action.payload;
         },
-        setExpenseEditFormData: (state, action) => {
-            state.expenseEditFormData = action.payload;
+        setExpenseFormData: (state, action) => {
+            state.expenseFormData = action.payload;
         },
     }
 });
 
 export const {
     setSettingsData,
-    setExpenseEditFormData
+    setExpenseFormData
 } = dataSlice.actions;
 
 export const getSettings = (state) => state.expenseData.settings;
-export const getExpenseEditFormData = (state) => state.expenseData.expenseEditFormData;
+export const getExpenseFormData = (state) => state.expenseData.expenseFormData;
 
 export default dataSlice.reducer;

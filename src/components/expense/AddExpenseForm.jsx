@@ -2,22 +2,32 @@ import { useFormik } from "formik";
 import React, { useEffect, useState } from "react";
 import { initialValues } from "./formik/initialValues";
 import { expenseValidationSchema } from "./formik/validationSchema";
-import { Autocomplete, Box, Button, FormControl, FormHelperText, InputLabel, MenuItem, Select, TextField, Tooltip, Typography } from "@mui/material";
+import { Autocomplete, Box, Button, FormControl, FormHelperText, IconButton, InputLabel, MenuItem, Select, TextField, Tooltip, Typography } from "@mui/material";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFnsV3";
 import { CreateDropdownData } from "../../utils/common";
 import { createExpense, updateExpense } from "../../services/expenseServices";
 import { useDispatch, useSelector } from "react-redux";
-import { getExpenseEditFormData, getSettings, setExpenseEditFormData } from "../../redux/slicers.js/dataSlice";
+import { getExpenseFormData, getSettings, setExpenseFormData } from "../../redux/slicers.js/dataSlice";
+import ReplayIcon from '@mui/icons-material/Replay';
+import SaveIcon from '@mui/icons-material/Save';
 
 export const AddExpenseForm = () => {
   const dispatch = useDispatch();
   const settings = useSelector(getSettings);
-  const editFormData = useSelector(getExpenseEditFormData);
+  const firebaseFormData = useSelector(getExpenseFormData);
   const { expenseCategories: categories, user, categoryTooltips } = settings;
   const expenseCategories = CreateDropdownData(Object.keys(settings).length ? categories : {});
   const users = CreateDropdownData(Object.keys(settings).length ? user : {});
   const [pageMode, setPageMode] = useState('add');
+  const [disableFields, setDisableFields] = useState({
+    date: false,
+    name: false,
+    category: false,
+    quantity: false,
+    price: false,
+    expensedBy: false,
+  });
   
   const formik = useFormik({
     initialValues: initialValues,
@@ -33,10 +43,10 @@ export const AddExpenseForm = () => {
           console.error("Something went wrong while saving expense -> ", err);
         });
       }else if(pageMode === 'edit'){
-        await updateExpense(editFormData?.id, values)
-          .then((res) => {
-            console.log("Expense updated successfully -> ", editFormData?.id);
-            dispatch(setExpenseEditFormData({})); // clear edit form data once success
+        await updateExpense(firebaseFormData?.id, values)
+          .then(() => {
+            console.log("Expense updated successfully -> ", firebaseFormData?.id);
+            dispatch(setExpenseFormData({})); // clear edit form data once success
             setPageMode('add'); // change back to add form
             resetForm(); // clear field data
           })
@@ -49,9 +59,13 @@ export const AddExpenseForm = () => {
 
   // edit page configurations
   useEffect(() => {
-    if(Object.keys(editFormData).length){
-      setPageMode('edit');
-      const { date, title, category, amount, price, createdBy } = editFormData;
+    if(Object.keys(firebaseFormData).length){
+      if(firebaseFormData?.mode === "edit"){
+        setPageMode('edit');
+      }else if(firebaseFormData?.mode === "view"){
+        setPageMode('view');
+      }
+      const { date, title, category, amount, price, createdBy } = firebaseFormData;
       formik.setValues((prevState) => ({
         ...prevState,
         date: date,
@@ -62,18 +76,47 @@ export const AddExpenseForm = () => {
         by: createdBy,
       }))
     }
-  }, [editFormData]);
+  }, [firebaseFormData]);
+
+  useEffect(() => {
+    if(pageMode === "view"){
+      setDisableFields((prevState) => ({
+        ...prevState,
+        date: true,
+        name: true,
+        category: true,
+        quantity: true,
+        price: true,
+        expensedBy: true,
+      }));
+    }else{
+      if(pageMode === "add"){
+        formik.resetForm();
+      }
+      setDisableFields((prevState) => ({
+        ...prevState,
+        date: false,
+        name: false,
+        category: false,
+        quantity: false,
+        price: false,
+        expensedBy: false,
+      }));
+    }
+  }, [pageMode]);
 
   return (
     <Box component="form" onSubmit={formik.handleSubmit}>
-      <Typography variant="h6" gutterBottom sx={{ mb: "15px" }}>
-        {pageMode === "add" ? "Add" : "Edit"} Expense
+      <Typography variant="h6" sx={{ mb: "15px", fontWeight: "bold" }}>
+        {pageMode === "add" ? "Add" : pageMode === "edit" ? "Edit" : "View"}{" "}
+        Expense
       </Typography>
 
       <LocalizationProvider dateAdapter={AdapterDateFns}>
         <DatePicker
           label="Expense Date"
           value={formik.values.date}
+          disabled={disableFields.date}
           onChange={(value) => formik.setFieldValue("date", value)}
           format="yyyy-MM-dd"
           minDate={new Date(2025, 0, 1)}
@@ -92,10 +135,11 @@ export const AddExpenseForm = () => {
       </LocalizationProvider>
 
       <TextField
-        sx={{mt: 1}}
+        sx={{ mt: 1 }}
         fullWidth
         label="Name"
         name="name"
+        disabled={disableFields.name}
         value={formik.values.name}
         onChange={formik.handleChange}
         error={formik.touched.name && Boolean(formik.errors.name)}
@@ -103,8 +147,9 @@ export const AddExpenseForm = () => {
       />
 
       <Autocomplete
-        sx={{mt: 1}}
+        sx={{ mt: 1 }}
         fullWidth
+        disabled={disableFields.category}
         options={expenseCategories}
         getOptionLabel={(option) => option.label}
         value={
@@ -128,19 +173,22 @@ export const AddExpenseForm = () => {
           />
         )}
         renderOption={(props, option) => (
-          <Tooltip title={categoryTooltips[option.value]} placement="right" arrow>
-            <li {...props}>
-              {option.label}
-            </li>
+          <Tooltip
+            title={categoryTooltips[option.value]}
+            placement="right"
+            arrow
+          >
+            <li {...props}>{option.label}</li>
           </Tooltip>
         )}
       />
 
       <TextField
-        sx={{mt: 1}}
+        sx={{ mt: 1 }}
         fullWidth
         label="Quantity"
         name="amount"
+        disabled={disableFields.quantity}
         value={formik.values.amount}
         onChange={formik.handleChange}
         error={formik.touched.amount && Boolean(formik.errors.amount)}
@@ -148,11 +196,12 @@ export const AddExpenseForm = () => {
       />
 
       <TextField
-        sx={{mt: 1}}
+        sx={{ mt: 1 }}
         fullWidth
         label="Price (Rs.)"
         name="price"
         type="number"
+        disabled={disableFields.price}
         value={formik.values.price}
         onChange={formik.handleChange}
         error={formik.touched.price && Boolean(formik.errors.price)}
@@ -168,6 +217,7 @@ export const AddExpenseForm = () => {
         <Select
           id="expensed-by-select"
           labelId="expensed-by-select-label"
+          disabled={disableFields.expensedBy}
           value={formik.values.by}
           label="Expensed By"
           onChange={(e) => formik.setFieldValue("by", e.target.value)}
@@ -183,9 +233,36 @@ export const AddExpenseForm = () => {
         )}
       </FormControl>
 
-      <Button type="submit" variant="contained" sx={{ mt: 2 }}>
-        {pageMode === "add" ? "Add" : "Update"} Expense
-      </Button>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          width: "100%",
+        }}
+      >
+        {["add", "edit"].includes(pageMode) && (
+          <Button
+            startIcon={<SaveIcon />}
+            type="submit"
+            variant="contained"
+            sx={{ mt: 2, textTransform: "none" }}
+          >
+            {pageMode === "add" ? "Add" : pageMode === "edit" ? "Update" : ""}{" "}
+            Expense
+          </Button>
+        )}
+        {pageMode === "view" && <div></div>}
+        {["view", "edit"].includes(pageMode) && (
+          <IconButton
+            sx={{ mt: 2 }}
+            title="Back to Add Expense"
+            onClick={() => setPageMode("add")}
+          >
+            <ReplayIcon color="primary" />
+          </IconButton>
+        )}
+      </div>
     </Box>
   );
 };

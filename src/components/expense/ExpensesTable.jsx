@@ -1,10 +1,20 @@
-import { DataGrid, GridActionsCellItem, GridFooterContainer, GridPagination, GridToolbar } from "@mui/x-data-grid";
+import {
+  DataGrid,
+  GridActionsCellItem,
+  GridFooterContainer,
+  GridPagination,
+  GridToolbar,
+} from "@mui/x-data-grid";
 import React, { memo, useEffect, useState } from "react";
 import { deleteExpense, fetchExpenses } from "../../services/expenseServices";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
+import VisibilityIcon from "@mui/icons-material/Visibility";
 import { useDispatch, useSelector } from "react-redux";
-import { getSettings, setExpenseEditFormData } from "../../redux/slicers.js/dataSlice";
+import {
+  getSettings,
+  setExpenseFormData,
+} from "../../redux/slicers.js/dataSlice";
 import { Typography } from "@mui/material";
 
 export const ExpensesTable = memo(() => {
@@ -12,7 +22,9 @@ export const ExpensesTable = memo(() => {
   const settings = useSelector(getSettings);
   const { expenseCategories, user } = settings;
   const [tableData, setTableData] = useState([]);
-  const [sortByColumn, setSortByColumn] = useState([{field: "date", sort: "desc"}]);
+  const [sortByColumn, setSortByColumn] = useState([
+    { field: "date", sort: "desc" },
+  ]);
 
   const columns = [
     {
@@ -80,10 +92,12 @@ export const ExpensesTable = memo(() => {
       field: "actions",
       headerName: "Actions",
       type: "actions",
+      width: 110,
       getActions: (params) => [
         <GridActionsCellItem
-          icon={<EditIcon />}
-          label="Edit"
+          icon={<VisibilityIcon color="info" />}
+          label="View"
+          title="View"
           onClick={(event) => {
             event.stopPropagation();
             const milliseconds =
@@ -92,12 +106,30 @@ export const ExpensesTable = memo(() => {
             const formattedDate = new Date(milliseconds);
             const clonedParamsRow = { ...params.row };
             clonedParamsRow.date = formattedDate;
-            dispatch(setExpenseEditFormData(clonedParamsRow));
+            clonedParamsRow.mode = "view";
+            dispatch(setExpenseFormData(clonedParamsRow));
           }}
         />,
         <GridActionsCellItem
-          icon={<DeleteIcon />}
+          icon={<EditIcon color="warning" />}
+          label="Edit"
+          title="Edit"
+          onClick={(event) => {
+            event.stopPropagation();
+            const milliseconds =
+              params.row?.date?.seconds * 1000 +
+              params.row?.date?.nanoseconds / 1000000;
+            const formattedDate = new Date(milliseconds);
+            const clonedParamsRow = { ...params.row };
+            clonedParamsRow.date = formattedDate;
+            clonedParamsRow.mode = "edit";
+            dispatch(setExpenseFormData(clonedParamsRow));
+          }}
+        />,
+        <GridActionsCellItem
+          icon={<DeleteIcon color="error" />}
           label="Delete"
+          title="Delete"
           onClick={(event) => {
             event.stopPropagation();
             handleDeleteRow(params.id);
@@ -110,15 +142,28 @@ export const ExpensesTable = memo(() => {
   // change sort by in the data grid
   const handleSortByColumnChange = (newSortByColumn) => {
     setSortByColumn(newSortByColumn);
-  }
+  };
 
   const totalPrice = tableData.reduce((sum, row) => sum + Number(row.price), 0);
   const customFooter = () => (
     <GridFooterContainer>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', marginLeft: "10px" }}>
-            <Typography sx={{fontWeight: 400, fontSize: "0.875rem"}}>Total Expenses: <span style={{color: "red", fontWeight: "bold"}}>Rs. {totalPrice.toFixed(2)}</span></Typography>
-            <GridPagination />
-        </div>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          width: "100%",
+          marginLeft: "10px",
+        }}
+      >
+        <Typography sx={{ fontWeight: 400, fontSize: "0.875rem" }}>
+          Total Expenses:{" "}
+          <span style={{ color: "red", fontWeight: "bold" }}>
+            Rs. {totalPrice.toFixed(2)}
+          </span>
+        </Typography>
+        <GridPagination />
+      </div>
     </GridFooterContainer>
   );
 
@@ -141,6 +186,9 @@ export const ExpensesTable = memo(() => {
 
   return (
     <div style={{ height: "100%", width: "100%" }}>
+      <Typography variant="h6" sx={{mb: "15px", fontWeight: "bold"}}>
+        Expenses
+      </Typography>
       <DataGrid
         rows={tableData}
         columns={columns}
