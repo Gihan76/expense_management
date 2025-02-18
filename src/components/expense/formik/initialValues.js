@@ -3,7 +3,7 @@ export const initialValues = {
     category: '',
     amount: '',
     price: '',
-    date: new Date(),
+    date: null,
     by: '',
     image: '',
 }

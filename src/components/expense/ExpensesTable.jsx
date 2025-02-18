@@ -1,6 +1,8 @@
 import { DataGrid } from "@mui/x-data-grid";
 import React, { memo, useEffect, useState } from "react";
-import { fetchExpenses } from "../../services/expenseServices";
+import { deleteExpense, fetchExpenses } from "../../services/expenseServices";
+import { IconButton } from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 export const ExpensesTable = memo(({ settings, withinRange }) => {
   const { expenseCategories, user } = settings;
@@ -15,8 +17,8 @@ export const ExpensesTable = memo(({ settings, withinRange }) => {
         const milliseconds = value.seconds * 1000;
         const date = new Date(milliseconds);
         const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
         const formattedDate = `${year}-${month}-${day}`;
         return formattedDate;
       },
@@ -27,7 +29,7 @@ export const ExpensesTable = memo(({ settings, withinRange }) => {
       align: "left",
       headerAlign: "left",
       width: 200,
-      flex: 1
+      flex: 1,
     },
     {
       field: "category",
@@ -45,7 +47,7 @@ export const ExpensesTable = memo(({ settings, withinRange }) => {
       headerName: "Quantity",
       align: "left",
       headerAlign: "left",
-      width: 80
+      width: 80,
     },
     {
       field: "price",
@@ -67,6 +69,24 @@ export const ExpensesTable = memo(({ settings, withinRange }) => {
         return user?.[value];
       },
     },
+    {
+      field: "actions",
+      headerName: "Actions",
+      headerAlign: "left",
+      width: 70,
+      renderCell: (params) => (
+        <div>
+          <IconButton
+            onClick={(event) => {
+              event.stopPropagation();
+              handleDeleteRow(params.id);
+            }}
+          >
+            <DeleteIcon />
+          </IconButton>
+        </div>
+      ),
+    },
   ];
 
   const totalPrice = tableData.reduce((sum, row) => sum + Number(row.price), 0);
@@ -82,9 +102,15 @@ export const ExpensesTable = memo(({ settings, withinRange }) => {
     </div>
   );
 
+  //   delete row functionality
+  const handleDeleteRow = async (id) => {
+    await deleteExpense(id);
+  };
+
+  // fetch real time table data
   useEffect(() => {
     const unsubscribe = fetchExpenses((data) => {
-        setTableData(data);
+      setTableData(data);
     }, {});
     return () => {
       if (unsubscribe && typeof unsubscribe === "function") {
@@ -93,6 +119,7 @@ export const ExpensesTable = memo(({ settings, withinRange }) => {
     };
   }, []);
 
+  //   fetch data if filter dates submit
   useEffect(() => {
     if (Object.keys(withinRange).length) {
       const unsubscribe = fetchExpenses((data) => {
@@ -105,7 +132,6 @@ export const ExpensesTable = memo(({ settings, withinRange }) => {
       };
     }
   }, [withinRange]);
-
 
   return (
     <DataGrid

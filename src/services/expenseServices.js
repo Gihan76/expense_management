@@ -1,4 +1,4 @@
-import { addDoc, collection, doc, getDoc, onSnapshot, query, serverTimestamp, where } from "firebase/firestore";
+import { addDoc, collection, doc, getDoc, onSnapshot, query, serverTimestamp, updateDoc, where } from "firebase/firestore";
 import { db } from "../config/firebase";
 
 // fetch setting constants
@@ -14,6 +14,7 @@ export const fetchConstants = async () => {
         }
     } catch (error) {
         console.error("Something went wrong while fetching settings data => ",error);
+        return null;
     }
 };
 
@@ -28,18 +29,20 @@ export const createExpense = async (values = {}) => {
             price: values?.price,
             date: values?.date,
             createdBy: values?.by,
-            createdTS: serverTimestamp()
+            createdTS: serverTimestamp(),
+            isDeleted: false,
         });
         return docRef.id;
     } catch (error) {
         console.error("Something went wrong while adding expense => ",error);
+        return;
     }
 };
 
 // fetch realtime expenses
 export const fetchExpenses = async (callback, range = {}) => {
     try {
-        let conditions = [];
+        let conditions = [where('isDeleted', '==', false)];
         if(range?.fromDate){
             conditions.push(where('date', '>=', range?.fromDate));
         }
@@ -60,5 +63,18 @@ export const fetchExpenses = async (callback, range = {}) => {
     } catch (error) {
         console.error("Something went wrong while fetching expenses => ",error);
         return () => {};
+    }
+};
+
+// delete expense (update flag)
+export const deleteExpense = async (docId = "") => {
+    try {
+        const docRef = doc(db, 'expenses', docId);
+        await updateDoc(docRef, {
+            isDeleted: true,
+            deletedTS: serverTimestamp(),
+        });
+    } catch (error) {
+        console.error("Something went wrong while deleting expense => ",error);
     }
 };
