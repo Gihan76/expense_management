@@ -5,12 +5,15 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import { useDispatch, useSelector } from "react-redux";
 import { getSettings, setExpenseEditFormData } from "../../redux/slicers.js/dataSlice";
+import { Typography } from "@mui/material";
 
-export const ExpensesTable = memo(({ withinRange }) => {
+export const ExpensesTable = memo(() => {
   const dispatch = useDispatch();
   const settings = useSelector(getSettings);
   const { expenseCategories, user } = settings;
   const [tableData, setTableData] = useState([]);
+  const [sortByColumn, setSortByColumn] = useState([{field: "date", sort: "desc"}]);
+
   const columns = [
     {
       field: "date",
@@ -83,9 +86,11 @@ export const ExpensesTable = memo(({ withinRange }) => {
           label="Edit"
           onClick={(event) => {
             event.stopPropagation();
-            const milliseconds = params.row?.date?.seconds * 1000 + params.row?.date?.nanoseconds / 1000000;
+            const milliseconds =
+              params.row?.date?.seconds * 1000 +
+              params.row?.date?.nanoseconds / 1000000;
             const formattedDate = new Date(milliseconds);
-            const clonedParamsRow = {...params.row};
+            const clonedParamsRow = { ...params.row };
             clonedParamsRow.date = formattedDate;
             dispatch(setExpenseEditFormData(clonedParamsRow));
           }}
@@ -102,11 +107,16 @@ export const ExpensesTable = memo(({ withinRange }) => {
     },
   ];
 
+  // change sort by in the data grid
+  const handleSortByColumnChange = (newSortByColumn) => {
+    setSortByColumn(newSortByColumn);
+  }
+
   const totalPrice = tableData.reduce((sum, row) => sum + Number(row.price), 0);
   const customFooter = () => (
     <GridFooterContainer>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', marginLeft: "10px" }}>
-            <span><strong>Total Expenses:</strong> Rs. {totalPrice.toFixed(2)}</span>
+            <Typography sx={{fontWeight: 400, fontSize: "0.875rem"}}>Total Expenses: <span style={{color: "red", fontWeight: "bold"}}>Rs. {totalPrice.toFixed(2)}</span></Typography>
             <GridPagination />
         </div>
     </GridFooterContainer>
@@ -129,37 +139,26 @@ export const ExpensesTable = memo(({ withinRange }) => {
     };
   }, []);
 
-  //   fetch data if filter dates submit
-  useEffect(() => {
-    if (Object.keys(withinRange).length) {
-      const unsubscribe = fetchExpenses((data) => {
-        setTableData(data);
-      }, withinRange);
-      return () => {
-        if (unsubscribe && typeof unsubscribe === "function") {
-          unsubscribe();
-        }
-      };
-    }
-  }, [withinRange]);
-
   return (
-    <DataGrid
-      rows={tableData}
-      columns={columns}
-    //   autoPageSize
-      disableRowSelectionOnClick
-      disableColumnFilter
-      pageSizeOptions={[25, 50, 100, { value: -1, label: 'All' }]}
-      slots={{
-        footer: customFooter,
-        toolbar: GridToolbar,
-      }}
-      slotProps={{
-        toolbar: {
-          showQuickFilter: true,
-        },
-      }}
-    />
+    <div style={{ height: "100%", width: "100%" }}>
+      <DataGrid
+        rows={tableData}
+        columns={columns}
+        disableColumnFilter
+        disableRowSelectionOnClick
+        pageSizeOptions={[25, 50, 100, { value: -1, label: "All" }]}
+        sortModel={sortByColumn}
+        onSortModelChange={handleSortByColumnChange}
+        slots={{
+          footer: customFooter,
+          toolbar: GridToolbar,
+        }}
+        slotProps={{
+          toolbar: {
+            showQuickFilter: true, // search bar
+          },
+        }}
+      />
+    </div>
   );
 });

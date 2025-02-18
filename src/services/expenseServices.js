@@ -19,15 +19,9 @@ export const fetchConstants = async () => {
 };
 
 // fetch realtime expenses
-export const fetchExpenses = async (callback, range = {}) => {
+export const fetchExpenses = async (callback) => {
     try {
         let conditions = [where('isDeleted', '==', false)];
-        if(range?.fromDate){
-            conditions.push(where('date', '>=', range?.fromDate));
-        }
-        if(range?.toDate){
-            conditions.push(where('date', '<=', range?.toDate));
-        }
         const colRef = collection(db, 'expenses');
         const queryRef = query(colRef, ...conditions);
 
@@ -67,6 +61,7 @@ export const createExpense = async (values = {}) => {
     }
 };
 
+// update expense data
 export const updateExpense = async (docId = "", values = {}) => {
     try {
         const docRef = doc(db, 'expenses', docId);

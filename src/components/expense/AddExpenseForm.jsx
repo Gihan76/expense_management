@@ -7,10 +7,11 @@ import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFnsV3";
 import { CreateDropdownData } from "../../utils/common";
 import { createExpense, updateExpense } from "../../services/expenseServices";
-import { useSelector } from "react-redux";
-import { getExpenseEditFormData, getSettings } from "../../redux/slicers.js/dataSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { getExpenseEditFormData, getSettings, setExpenseEditFormData } from "../../redux/slicers.js/dataSlice";
 
 export const AddExpenseForm = () => {
+  const dispatch = useDispatch();
   const settings = useSelector(getSettings);
   const editFormData = useSelector(getExpenseEditFormData);
   const { expenseCategories: categories, user, categoryTooltips } = settings;
@@ -35,8 +36,9 @@ export const AddExpenseForm = () => {
         await updateExpense(editFormData?.id, values)
           .then((res) => {
             console.log("Expense updated successfully -> ", editFormData?.id);
-            setPageMode('add');
-            resetForm();
+            dispatch(setExpenseEditFormData({})); // clear edit form data once success
+            setPageMode('add'); // change back to add form
+            resetForm(); // clear field data
           })
           .catch((err) => {
             console.error("Something went wrong while updating expense -> ", err);
