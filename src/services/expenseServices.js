@@ -18,27 +18,6 @@ export const fetchConstants = async () => {
     }
 };
 
-// add setting constants
-export const createExpense = async (values = {}) => {
-    try {
-        const colRef = collection(db, 'expenses');
-        const docRef = await addDoc(colRef, {
-            title: values?.name,
-            category: values?.category,
-            ...(values?.amount ? {amount: values?.amount} : {}),
-            price: values?.price,
-            date: values?.date,
-            createdBy: values?.by,
-            createdTS: serverTimestamp(),
-            isDeleted: false,
-        });
-        return docRef.id;
-    } catch (error) {
-        console.error("Something went wrong while adding expense => ",error);
-        return;
-    }
-};
-
 // fetch realtime expenses
 export const fetchExpenses = async (callback, range = {}) => {
     try {
@@ -63,6 +42,45 @@ export const fetchExpenses = async (callback, range = {}) => {
     } catch (error) {
         console.error("Something went wrong while fetching expenses => ",error);
         return () => {};
+    }
+};
+
+
+// add setting constants
+export const createExpense = async (values = {}) => {
+    try {
+        const colRef = collection(db, 'expenses');
+        const docRef = await addDoc(colRef, {
+            title: values?.name,
+            category: values?.category,
+            ...(values?.amount ? {amount: values?.amount} : {}),
+            price: values?.price,
+            date: values?.date,
+            createdBy: values?.by,
+            createdTS: serverTimestamp(),
+            isDeleted: false,
+        });
+        return docRef.id;
+    } catch (error) {
+        console.error("Something went wrong while adding expense => ",error);
+        return;
+    }
+};
+
+export const updateExpense = async (docId = "", values = {}) => {
+    try {
+        const docRef = doc(db, 'expenses', docId);
+        await updateDoc(docRef, {
+            title: values?.name,
+            category: values?.category,
+            ...(values?.amount ? {amount: values?.amount} : {}),
+            price: values?.price,
+            date: values?.date,
+            modifiedBy: values?.by,
+            modifiedTS: serverTimestamp(),
+        });
+    } catch (error) {
+        console.error("Something went wrong while updating expense => ",error);
     }
 };
 

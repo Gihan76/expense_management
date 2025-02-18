@@ -1,37 +1,71 @@
 import { useFormik } from "formik";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { initialValues } from "./formik/initialValues";
 import { expenseValidationSchema } from "./formik/validationSchema";
 import { Autocomplete, Box, Button, FormControl, FormHelperText, InputLabel, MenuItem, Select, TextField, Tooltip, Typography } from "@mui/material";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFnsV3";
 import { CreateDropdownData } from "../../utils/common";
-import { createExpense } from "../../services/expenseServices";
+import { createExpense, updateExpense } from "../../services/expenseServices";
+import { useSelector } from "react-redux";
+import { getExpenseEditFormData, getSettings } from "../../redux/slicers.js/dataSlice";
 
-export const AddExpenseForm = ({ settings }) => {
+export const AddExpenseForm = () => {
+  const settings = useSelector(getSettings);
+  const editFormData = useSelector(getExpenseEditFormData);
   const { expenseCategories: categories, user, categoryTooltips } = settings;
   const expenseCategories = CreateDropdownData(Object.keys(settings).length ? categories : {});
   const users = CreateDropdownData(Object.keys(settings).length ? user : {});
+  const [pageMode, setPageMode] = useState('add');
   
   const formik = useFormik({
     initialValues: initialValues,
     validationSchema: expenseValidationSchema,
     onSubmit: async (values, {resetForm}) => {
-      await createExpense(values)
+      if(pageMode === 'add'){
+        await createExpense(values)
         .then((res) => {
           console.log("Expense added successfully -> ", res);
           resetForm();
         })
         .catch((err) => {
-          console.error("Something went wrong -> ", err);
-        })
+          console.error("Something went wrong while saving expense -> ", err);
+        });
+      }else if(pageMode === 'edit'){
+        await updateExpense(editFormData?.id, values)
+          .then((res) => {
+            console.log("Expense updated successfully -> ", editFormData?.id);
+            setPageMode('add');
+            resetForm();
+          })
+          .catch((err) => {
+            console.error("Something went wrong while updating expense -> ", err);
+          });
+      }
     },
   });
+
+  // edit page configurations
+  useEffect(() => {
+    if(Object.keys(editFormData).length){
+      setPageMode('edit');
+      const { date, title, category, amount, price, createdBy } = editFormData;
+      formik.setValues((prevState) => ({
+        ...prevState,
+        date: date,
+        name: title,
+        category: category,
+        amount: amount ? amount : "",
+        price: price,
+        by: createdBy,
+      }))
+    }
+  }, [editFormData]);
 
   return (
     <Box component="form" onSubmit={formik.handleSubmit}>
       <Typography variant="h6" gutterBottom sx={{ mb: "15px" }}>
-        Add Expense
+        {pageMode === "add" ? "Add" : "Edit"} Expense
       </Typography>
 
       <LocalizationProvider dateAdapter={AdapterDateFns}>
@@ -148,7 +182,7 @@ export const AddExpenseForm = ({ settings }) => {
       </FormControl>
 
       <Button type="submit" variant="contained" sx={{ mt: 2 }}>
-        Add Expense
+        {pageMode === "add" ? "Add" : "Update"} Expense
       </Button>
     </Box>
   );

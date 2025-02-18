@@ -1,10 +1,14 @@
-import { DataGrid } from "@mui/x-data-grid";
+import { DataGrid, GridActionsCellItem, GridFooterContainer, GridPagination, GridToolbar } from "@mui/x-data-grid";
 import React, { memo, useEffect, useState } from "react";
 import { deleteExpense, fetchExpenses } from "../../services/expenseServices";
-import { IconButton } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
+import { useDispatch, useSelector } from "react-redux";
+import { getSettings, setExpenseEditFormData } from "../../redux/slicers.js/dataSlice";
 
-export const ExpensesTable = memo(({ settings, withinRange }) => {
+export const ExpensesTable = memo(({ withinRange }) => {
+  const dispatch = useDispatch();
+  const settings = useSelector(getSettings);
   const { expenseCategories, user } = settings;
   const [tableData, setTableData] = useState([]);
   const columns = [
@@ -72,34 +76,40 @@ export const ExpensesTable = memo(({ settings, withinRange }) => {
     {
       field: "actions",
       headerName: "Actions",
-      headerAlign: "left",
-      width: 70,
-      renderCell: (params) => (
-        <div>
-          <IconButton
-            onClick={(event) => {
-              event.stopPropagation();
-              handleDeleteRow(params.id);
-            }}
-          >
-            <DeleteIcon />
-          </IconButton>
-        </div>
-      ),
+      type: "actions",
+      getActions: (params) => [
+        <GridActionsCellItem
+          icon={<EditIcon />}
+          label="Edit"
+          onClick={(event) => {
+            event.stopPropagation();
+            const milliseconds = params.row?.date?.seconds * 1000 + params.row?.date?.nanoseconds / 1000000;
+            const formattedDate = new Date(milliseconds);
+            const clonedParamsRow = {...params.row};
+            clonedParamsRow.date = formattedDate;
+            dispatch(setExpenseEditFormData(clonedParamsRow));
+          }}
+        />,
+        <GridActionsCellItem
+          icon={<DeleteIcon />}
+          label="Delete"
+          onClick={(event) => {
+            event.stopPropagation();
+            handleDeleteRow(params.id);
+          }}
+        />,
+      ],
     },
   ];
 
   const totalPrice = tableData.reduce((sum, row) => sum + Number(row.price), 0);
   const customFooter = () => (
-    <div
-      style={{
-        padding: "10px",
-        backgroundColor: "#f5f5f5",
-        borderTop: "1px solid #ddd",
-      }}
-    >
-      <strong>Total Expenses:</strong> Rs. {totalPrice.toFixed(2)}
-    </div>
+    <GridFooterContainer>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', marginLeft: "10px" }}>
+            <span><strong>Total Expenses:</strong> Rs. {totalPrice.toFixed(2)}</span>
+            <GridPagination />
+        </div>
+    </GridFooterContainer>
   );
 
   //   delete row functionality
@@ -137,8 +147,18 @@ export const ExpensesTable = memo(({ settings, withinRange }) => {
     <DataGrid
       rows={tableData}
       columns={columns}
+    //   autoPageSize
+      disableRowSelectionOnClick
+      disableColumnFilter
+      pageSizeOptions={[25, 50, 100, { value: -1, label: 'All' }]}
       slots={{
         footer: customFooter,
+        toolbar: GridToolbar,
+      }}
+      slotProps={{
+        toolbar: {
+          showQuickFilter: true,
+        },
       }}
     />
   );

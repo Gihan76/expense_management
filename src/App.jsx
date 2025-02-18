@@ -8,9 +8,11 @@ import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import * as Yup from 'yup';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFnsV3';
 import { FIELD_MANDATORY, INVALID_DATE } from './config/constants';
+import { useDispatch } from 'react-redux';
+import { setSettingsData } from './redux/slicers.js/dataSlice';
 
 function App() {
-  const [settings, setSettings] = useState({});
+  const dispatch = useDispatch();
   const [formData, setFormData] = useState({});
   const formik = useFormik({
     initialValues: {
@@ -29,7 +31,7 @@ function App() {
   useEffect(() => {
     (async() => {
       const data = await fetchConstants();
-      setSettings(data);
+      dispatch(setSettingsData(data));
     })();
   }, []);
 
@@ -39,7 +41,7 @@ function App() {
         {/* form */}
         <Grid2 size={4}>
           <Paper elevation={3} sx={{ padding: 2 }}>
-            <AddExpenseForm settings={settings} />
+            <AddExpenseForm />
           </Paper>
         </Grid2>
 
@@ -110,7 +112,7 @@ function App() {
               </form>
             </LocalizationProvider>
 
-            <ExpensesTable settings={settings} withinRange={formData} />
+            <ExpensesTable withinRange={formData} />
           </Paper>
         </Grid2>
       </Grid2>
