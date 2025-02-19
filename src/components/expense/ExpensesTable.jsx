@@ -5,7 +5,7 @@ import {
   GridPagination,
   GridToolbar,
 } from "@mui/x-data-grid";
-import React, { memo, useEffect, useState } from "react";
+import React, { memo, useEffect, useMemo, useState } from "react";
 import { deleteExpense, fetchExpenses } from "../../services/expenseServices";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
@@ -16,14 +16,23 @@ import {
   setExpenseFormData,
 } from "../../redux/slicers.js/dataSlice";
 import {
+  Box,
   Button,
   Dialog,
   DialogActions,
   DialogContent,
   DialogContentText,
   DialogTitle,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
   Typography,
 } from "@mui/material";
+import { CUSTOMER_FILTER_OPTIONS } from "../../config/constants";
+import dayjs from "dayjs";
+import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
+dayjs.extend(isSameOrAfter);
 
 export const ExpensesTable = memo(() => {
   const dispatch = useDispatch();
@@ -36,6 +45,7 @@ export const ExpensesTable = memo(() => {
   const [isLoading, setIsLoading] = useState(false);
   const [isDeletePopUpOpen, setIsDeletePopUpOpen] = useState(false);
   const [rowToDelete, setRowToDelete] = useState(null);
+  const [selectedFilter, setSelectedFilter] = useState("all");
 
   const columns = [
     {
@@ -155,7 +165,38 @@ export const ExpensesTable = memo(() => {
     setSortByColumn(newSortByColumn);
   };
 
-  const totalPrice = tableData.reduce((sum, row) => sum + Number(row.price), 0);
+  // filter data based on the selection (last week, month, year)
+  const filteredData = useMemo(() => {
+    if (selectedFilter === "all") {
+      return tableData;
+    }
+    const now = dayjs();
+    let filterStart;
+    switch (selectedFilter) {
+      case "week":
+        filterStart = now.startOf("week");
+        break;
+      case "month":
+        filterStart = now.startOf("month");
+        break;
+      case "year":
+        filterStart = now.startOf("year");
+        break;
+      default:
+        return tableData;
+    }
+    return tableData.filter((row) => {
+      const milliseconds =
+        row.date.seconds * 1000 + (row.date.nanoseconds / 1000000 || 0);
+      const rowDate = dayjs(milliseconds);
+      return rowDate.isSameOrAfter(filterStart, "day");
+    });
+  }, [tableData, selectedFilter]);
+
+  //  const totalPrice = tableData.reduce((sum, row) => sum + Number(row.price), 0);
+  const totalPrice = useMemo(() => {
+    return filteredData.reduce((sum, row) => sum + Number(row.price), 0);
+  }, [filteredData]);
   const customFooter = () => (
     <GridFooterContainer>
       <div
@@ -210,11 +251,38 @@ export const ExpensesTable = memo(() => {
 
   return (
     <div style={{ height: "100%", width: "100%" }}>
-      <Typography variant="h6" sx={{ mb: "15px", fontWeight: "bold" }}>
-        Expenses
-      </Typography>
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          mb: 2,
+        }}
+      >
+        <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+          Expenses
+        </Typography>
+
+        <FormControl size="small" sx={{width: "150px"}}>
+          <InputLabel id="filter-label">Filter By</InputLabel>
+          <Select
+            labelId="filter-label"
+            id="filter"
+            value={selectedFilter}
+            label="Filter By"
+            onChange={(e) => setSelectedFilter(e.target.value)}
+          >
+            {CUSTOMER_FILTER_OPTIONS.map((option) => (
+              <MenuItem key={option.value} value={option.value}>
+                {option.label}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      </Box>
+
       <DataGrid
-        rows={tableData}
+        rows={filteredData}
         columns={columns}
         loading={isLoading}
         disableColumnFilter

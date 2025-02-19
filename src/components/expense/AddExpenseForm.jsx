@@ -2,7 +2,7 @@ import { useFormik } from "formik";
 import React, { useEffect, useState } from "react";
 import { initialValues } from "./formik/initialValues";
 import { expenseValidationSchema } from "./formik/validationSchema";
-import { Autocomplete, Box, Button, FormControl, FormHelperText, IconButton, InputLabel, MenuItem, Select, TextField, Tooltip, Typography } from "@mui/material";
+import { Autocomplete, Box, Button, FormControl, FormHelperText, IconButton, InputAdornment, InputLabel, MenuItem, Select, TextField, Tooltip, Typography } from "@mui/material";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFnsV3";
 import { CreateDropdownData } from "../../utils/common";
@@ -198,12 +198,17 @@ export const AddExpenseForm = () => {
       <TextField
         sx={{ mt: 1 }}
         fullWidth
-        label="Price (Rs.)"
+        label="Price"
         name="price"
         type="number"
         disabled={disableFields.price}
         value={formik.values.price}
         onChange={formik.handleChange}
+        slotProps={{
+          input: {
+            startAdornment: <InputAdornment position="start">Rs.</InputAdornment>
+          }
+        }}
         error={formik.touched.price && Boolean(formik.errors.price)}
         helperText={formik.touched.price && formik.errors.price}
       />
