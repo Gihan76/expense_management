@@ -15,7 +15,15 @@ import {
   getSettings,
   setExpenseFormData,
 } from "../../redux/slicers.js/dataSlice";
-import { Typography } from "@mui/material";
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Typography,
+} from "@mui/material";
 
 export const ExpensesTable = memo(() => {
   const dispatch = useDispatch();
@@ -25,6 +33,9 @@ export const ExpensesTable = memo(() => {
   const [sortByColumn, setSortByColumn] = useState([
     { field: "date", sort: "desc" },
   ]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isDeletePopUpOpen, setIsDeletePopUpOpen] = useState(false);
+  const [rowToDelete, setRowToDelete] = useState(null);
 
   const columns = [
     {
@@ -132,7 +143,7 @@ export const ExpensesTable = memo(() => {
           title="Delete"
           onClick={(event) => {
             event.stopPropagation();
-            handleDeleteRow(params.id);
+            handleDeletePopUpOpen(params.id);
           }}
         />,
       ],
@@ -167,15 +178,28 @@ export const ExpensesTable = memo(() => {
     </GridFooterContainer>
   );
 
+  const handleDeletePopUpOpen = (rowId) => {
+    setRowToDelete(rowId);
+    setIsDeletePopUpOpen(true);
+  };
+
+  const handleDeletePopUpClose = () => {
+    setRowToDelete(null);
+    setIsDeletePopUpOpen(false);
+  };
+
   //   delete row functionality
   const handleDeleteRow = async (id) => {
     await deleteExpense(id);
+    handleDeletePopUpClose();
   };
 
   // fetch real time table data
   useEffect(() => {
+    setIsLoading(true);
     const unsubscribe = fetchExpenses((data) => {
       setTableData(data);
+      setIsLoading(false);
     }, {});
     return () => {
       if (unsubscribe && typeof unsubscribe === "function") {
@@ -186,27 +210,58 @@ export const ExpensesTable = memo(() => {
 
   return (
     <div style={{ height: "100%", width: "100%" }}>
-      <Typography variant="h6" sx={{mb: "15px", fontWeight: "bold"}}>
+      <Typography variant="h6" sx={{ mb: "15px", fontWeight: "bold" }}>
         Expenses
       </Typography>
       <DataGrid
         rows={tableData}
         columns={columns}
+        loading={isLoading}
         disableColumnFilter
         disableRowSelectionOnClick
         pageSizeOptions={[25, 50, 100, { value: -1, label: "All" }]}
         sortModel={sortByColumn}
         onSortModelChange={handleSortByColumnChange}
         slots={{
-          footer: customFooter,
-          toolbar: GridToolbar,
+          footer: customFooter, // custom total footer
+          toolbar: GridToolbar, // default toolbar at the top of table
         }}
         slotProps={{
           toolbar: {
             showQuickFilter: true, // search bar
           },
+          loadingOverlay: {
+            // circular loader until records get loaded
+            variant: "circular-progress",
+            noRowsVariant: "circular-progress",
+          },
         }}
       />
+
+      {/* delete row pop up */}
+      <Dialog open={isDeletePopUpOpen} onClose={handleDeletePopUpClose}>
+        <DialogTitle>Confirm Delete</DialogTitle>
+
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to delete this expense?
+          </DialogContentText>
+        </DialogContent>
+
+        <DialogActions>
+          <Button onClick={handleDeletePopUpClose} variant="contained">
+            No
+          </Button>
+          <Button
+            onClick={() => handleDeleteRow(rowToDelete)}
+            variant="outlined"
+            color="error"
+            autoFocus
+          >
+            Yes
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 });
