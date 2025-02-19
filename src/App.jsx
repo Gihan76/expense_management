@@ -5,6 +5,7 @@ import { fetchConstants } from './services/expenseServices';
 import { ExpensesTable } from './components/expense/ExpensesTable';
 import { useDispatch } from 'react-redux';
 import { setSettingsData } from './redux/slicers.js/dataSlice';
+import { Bounce, ToastContainer } from 'react-toastify';
 
 function App() {
   const dispatch = useDispatch();
@@ -33,6 +34,13 @@ function App() {
           </Paper>
         </Grid2>
       </Grid2>
+
+      <ToastContainer
+        position="top-right"
+        hideProgressBar={false}
+        transition={Bounce}
+        theme="light"
+      />
     </>
   );
 }

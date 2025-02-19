@@ -11,6 +11,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { getExpenseFormData, getSettings, setExpenseFormData } from "../../redux/slicers.js/dataSlice";
 import ReplayIcon from '@mui/icons-material/Replay';
 import SaveIcon from '@mui/icons-material/Save';
+import { toast } from "react-toastify";
 
 export const AddExpenseForm = () => {
   const dispatch = useDispatch();
@@ -34,26 +35,37 @@ export const AddExpenseForm = () => {
     initialValues: initialValues,
     validationSchema: expenseValidationSchema,
     onSubmit: async (values, {resetForm}) => {
-      if(pageMode === 'add'){
-        await createExpense(values)
-        .then((res) => {
-          console.log("Expense added successfully -> ", res);
-          resetForm();
-        })
-        .catch((err) => {
-          console.error("Something went wrong while saving expense -> ", err);
-        });
-      }else if(pageMode === 'edit'){
-        await updateExpense(firebaseFormData?.id, values)
-          .then(() => {
-            console.log("Expense updated successfully -> ", firebaseFormData?.id);
-            dispatch(setExpenseFormData({})); // clear edit form data once success
-            setPageMode('add'); // change back to add form
-            resetForm(); // clear field data
-          })
-          .catch((err) => {
-            console.error("Something went wrong while updating expense -> ", err);
+      const toastId = toast.loading("Processing...");
+      try {
+        if (pageMode === "add") {
+          await createExpense(values);
+          toast.update(toastId, {
+            render: "Expense saved successfully!",
+            type: "success",
+            isLoading: false,
+            autoClose: 5000,
           });
+          resetForm();
+        } else if (pageMode === "edit") {
+          await updateExpense(firebaseFormData?.id, values);
+          toast.update(toastId, {
+            render: "Expense updated successfully!",
+            type: "success",
+            isLoading: false,
+            autoClose: 5000,
+          });
+          dispatch(setExpenseFormData({}));
+          setPageMode("add");
+          resetForm();
+        }
+      } catch (err) {
+        toast.update(toastId, {
+          render: "Something went wrong, Please Try again!",
+          type: "error",
+          isLoading: false,
+          autoClose: 5000,
+        });
+        console.error("Something went wrong while saving/updating expense -> ",err);
       }
     },
   });

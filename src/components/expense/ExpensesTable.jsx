@@ -32,6 +32,7 @@ import {
 import { CUSTOMER_FILTER_OPTIONS } from "../../config/constants";
 import dayjs from "dayjs";
 import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
+import { toast } from "react-toastify";
 dayjs.extend(isSameOrAfter);
 
 export const ExpensesTable = memo(() => {
@@ -236,7 +237,14 @@ export const ExpensesTable = memo(() => {
 
   //   delete row functionality
   const handleDeleteRow = async (id) => {
+    const toastId = toast.loading("Processing...");
     await deleteExpense(id);
+    toast.update(toastId, {
+      render: "Expense deleted successfully!",
+      type: "success",
+      isLoading: false,
+      autoClose: 5000,
+    });
     handleDeletePopUpClose();
   };
 
