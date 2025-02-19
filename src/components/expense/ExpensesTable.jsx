@@ -42,6 +42,10 @@ export const ExpensesTable = memo(() => {
   const [sortByColumn, setSortByColumn] = useState([
     { field: "date", sort: "desc" },
   ]);
+  const [paginationModel, setPaginationModel] = useState({
+    pageSize: 25,
+    page: 0,
+  })
   const [isLoading, setIsLoading] = useState(false);
   const [isDeletePopUpOpen, setIsDeletePopUpOpen] = useState(false);
   const [rowToDelete, setRowToDelete] = useState(null);
@@ -197,6 +201,7 @@ export const ExpensesTable = memo(() => {
   const totalPrice = useMemo(() => {
     return filteredData.reduce((sum, row) => sum + Number(row.price), 0);
   }, [filteredData]);
+  
   const customFooter = () => (
     <GridFooterContainer>
       <div
@@ -208,7 +213,7 @@ export const ExpensesTable = memo(() => {
           marginLeft: "10px",
         }}
       >
-        <Typography sx={{ fontWeight: 400, fontSize: "0.875rem" }}>
+        <Typography sx={{ fontWeight: 400, fontSize: "0.875rem" , whiteSpace: "nowrap"}}>
           Total Expenses:{" "}
           <span style={{ color: "red", fontWeight: "bold" }}>
             Rs. {totalPrice.toFixed(2)}
@@ -287,6 +292,8 @@ export const ExpensesTable = memo(() => {
         loading={isLoading}
         disableColumnFilter
         disableRowSelectionOnClick
+        paginationModel={paginationModel}
+        onPaginationModelChange={setPaginationModel}
         pageSizeOptions={[25, 50, 100, { value: -1, label: "All" }]}
         sortModel={sortByColumn}
         onSortModelChange={handleSortByColumnChange}

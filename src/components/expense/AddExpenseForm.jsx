@@ -28,6 +28,7 @@ export const AddExpenseForm = () => {
     price: false,
     expensedBy: false,
   });
+  const [selectedCategoryInfo, setSelectedCategoryInfo] = useState(null);
   
   const formik = useFormik({
     initialValues: initialValues,
@@ -105,6 +106,16 @@ export const AddExpenseForm = () => {
     }
   }, [pageMode]);
 
+  // set category info values
+  useEffect(() => {
+    if(formik.values.category){
+      const selectedCategory = expenseCategories.find((cat) => cat.value === formik.values.category);
+      if(selectedCategory) setSelectedCategoryInfo(categoryTooltips[selectedCategory.value]);
+    }else{
+      setSelectedCategoryInfo(null);
+    }
+  }, [formik.values.category, expenseCategories, categoryTooltips]);
+
   return (
     <Box component="form" onSubmit={formik.handleSubmit}>
       <Typography variant="h6" sx={{ mb: "15px", fontWeight: "bold" }}>
@@ -172,16 +183,21 @@ export const AddExpenseForm = () => {
             helperText={formik.touched.category && formik.errors.category}
           />
         )}
-        renderOption={(props, option) => (
-          <Tooltip
-            title={categoryTooltips[option.value]}
-            placement="right"
-            arrow
-          >
-            <li {...props}>{option.label}</li>
-          </Tooltip>
-        )}
       />
+
+      {selectedCategoryInfo && (
+        <div
+          style={{
+            marginTop: "8px",
+            padding: "8px",
+            border: "1px solid #ccc",
+            borderRadius: "4px",
+            backgroundColor: "lightgray"
+          }}
+        >
+          <Typography variant="body2" sx={{fontWeight: "bold"}}>{selectedCategoryInfo}</Typography>
+        </div>
+      )}
 
       <TextField
         sx={{ mt: 1 }}
@@ -206,8 +222,10 @@ export const AddExpenseForm = () => {
         onChange={formik.handleChange}
         slotProps={{
           input: {
-            startAdornment: <InputAdornment position="start">Rs.</InputAdornment>
-          }
+            startAdornment: (
+              <InputAdornment position="start">Rs.</InputAdornment>
+            ),
+          },
         }}
         error={formik.touched.price && Boolean(formik.errors.price)}
         helperText={formik.touched.price && formik.errors.price}
