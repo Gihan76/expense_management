@@ -58,6 +58,8 @@ export const ExpensesTable = memo(() => {
       headerName: "Date",
       align: "left",
       headerAlign: "left",
+      minWidth: 100,
+      maxWidth: 100,
       valueFormatter: (value) => {
         const milliseconds = value.seconds * 1000;
         const date = new Date(milliseconds);
@@ -73,26 +75,27 @@ export const ExpensesTable = memo(() => {
       headerName: "Expense",
       align: "left",
       headerAlign: "left",
-      width: 200,
-      flex: 1,
+      minWidth: 170,
+      maxWidth: 300,
     },
     {
       field: "category",
       headerName: "Type",
       align: "left",
       headerAlign: "left",
-      width: 150,
-      flex: 1,
+      minWidth: 120,
+      maxWidth: 150,
       valueFormatter: (value) => {
         return expenseCategories?.[value];
       },
     },
     {
-      field: "amount",
-      headerName: "Quantity",
+      field: "notes",
+      headerName: "Notes",
       align: "left",
       headerAlign: "left",
-      width: 80,
+      minWidth: 220,
+      maxWidth: 300,
     },
     {
       field: "price",
@@ -100,6 +103,8 @@ export const ExpensesTable = memo(() => {
       type: "number",
       align: "left",
       headerAlign: "left",
+      minWidth: 100,
+      maxWidth: 150,
       valueFormatter: (value) => {
         return `Rs. ${value}`;
       },
@@ -109,16 +114,23 @@ export const ExpensesTable = memo(() => {
       headerName: "Expensed By",
       align: "left",
       headerAlign: "left",
-      width: 110,
-      valueFormatter: (value) => {
-        return user?.[value];
+      minWidth: 120,
+      maxWidth: 120,
+      valueFormatter: (value, rowData) => {
+        // if modifiedBy value available show it, otherwise show createdBy
+        if (rowData?.modifiedBy && user?.[rowData?.modifiedBy]) {
+          return user?.[rowData?.modifiedBy];
+        } else {
+          return user?.[value];
+        }
       },
     },
     {
       field: "actions",
       headerName: "Actions",
       type: "actions",
-      width: 110,
+      minWidth: 110,
+      maxWidth: 110,
       getActions: (params) => [
         <GridActionsCellItem
           icon={<VisibilityIcon color="info" />}

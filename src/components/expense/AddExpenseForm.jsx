@@ -28,6 +28,7 @@ export const AddExpenseForm = () => {
     quantity: false,
     price: false,
     expensedBy: false,
+    submitBtn: false,
   });
   const [selectedCategoryInfo, setSelectedCategoryInfo] = useState(null);
   
@@ -37,6 +38,7 @@ export const AddExpenseForm = () => {
     onSubmit: async (values, {resetForm}) => {
       const toastId = toast.loading("Processing...");
       try {
+        setDisableFields((prevState) => ({ ...prevState, submitBtn: true }));
         if (pageMode === "add") {
           await createExpense(values);
           toast.update(toastId, {
@@ -46,6 +48,7 @@ export const AddExpenseForm = () => {
             autoClose: 5000,
           });
           resetForm();
+          setDisableFields((prevState) => ({ ...prevState, submitBtn: false }));
         } else if (pageMode === "edit") {
           await updateExpense(firebaseFormData?.id, values);
           toast.update(toastId, {
@@ -57,6 +60,7 @@ export const AddExpenseForm = () => {
           dispatch(setExpenseFormData({}));
           setPageMode("add");
           resetForm();
+          setDisableFields((prevState) => ({ ...prevState, submitBtn: false }));
         }
       } catch (err) {
         toast.update(toastId, {
@@ -78,15 +82,15 @@ export const AddExpenseForm = () => {
       }else if(firebaseFormData?.mode === "view"){
         setPageMode('view');
       }
-      const { date, title, category, amount, price, createdBy } = firebaseFormData;
+      const { date, title, category, notes, price, createdBy, modifiedBy } = firebaseFormData;
       formik.setValues((prevState) => ({
         ...prevState,
         date: date,
         name: title,
         category: category,
-        amount: amount ? amount : "",
+        notes: notes ? notes : "",
         price: price,
-        by: createdBy,
+        by: modifiedBy ? modifiedBy : createdBy,
       }))
     }
   }, [firebaseFormData]);
@@ -104,7 +108,7 @@ export const AddExpenseForm = () => {
       }));
     }else{
       if(pageMode === "add"){
-        formik.resetForm();
+        formik.resetForm(); // reset page data when user clicks reset button in the form
       }
       setDisableFields((prevState) => ({
         ...prevState,
@@ -214,13 +218,15 @@ export const AddExpenseForm = () => {
       <TextField
         sx={{ mt: 1 }}
         fullWidth
-        label="Quantity"
-        name="amount"
+        multiline
+        maxRows={3}
+        label="Notes"
+        name="notes"
         disabled={disableFields.quantity}
-        value={formik.values.amount}
+        value={formik.values.notes}
         onChange={formik.handleChange}
-        error={formik.touched.amount && Boolean(formik.errors.amount)}
-        helperText={formik.touched.amount && formik.errors.amount}
+        error={formik.touched.notes && Boolean(formik.errors.notes)}
+        helperText={formik.touched.notes && formik.errors.notes}
       />
 
       <TextField
@@ -282,6 +288,7 @@ export const AddExpenseForm = () => {
             type="submit"
             variant="contained"
             sx={{ mt: 2, textTransform: "none" }}
+            disabled={disableFields.submitBtn}
           >
             {pageMode === "add" ? "Add" : pageMode === "edit" ? "Update" : ""}{" "}
             Expense

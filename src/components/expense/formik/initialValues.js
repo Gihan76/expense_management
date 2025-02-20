@@ -1,7 +1,7 @@
 export const initialValues = {
     name: '',
     category: '',
-    amount: '',
+    notes: '',
     price: '',
     date: null,
     by: '',

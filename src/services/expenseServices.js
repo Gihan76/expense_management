@@ -47,7 +47,7 @@ export const createExpense = async (values = {}) => {
         const docRef = await addDoc(colRef, {
             title: values?.name,
             category: values?.category,
-            ...(values?.amount ? {amount: values?.amount} : {}),
+            ...(values?.notes ? {notes: values?.notes} : {}),
             price: values?.price,
             date: values?.date,
             createdBy: values?.by,
@@ -68,7 +68,7 @@ export const updateExpense = async (docId = "", values = {}) => {
         await updateDoc(docRef, {
             title: values?.name,
             category: values?.category,
-            ...(values?.amount ? {amount: values?.amount} : {}),
+            ...(values?.notes ? {notes: values?.notes} : {}),
             price: values?.price,
             date: values?.date,
             modifiedBy: values?.by,
