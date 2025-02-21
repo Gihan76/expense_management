@@ -13,10 +13,11 @@ import * as yup from "yup";
 import { browserLocalPersistence, browserSessionPersistence, setPersistence, signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../../config/firebase";
 import { toast } from "react-toastify";
-import { useAuth } from "../../hooks/useAuth";
+import { useDispatch } from "react-redux";
+import { setIsUserLoggedIn, setLoggedUserData } from "../../redux/slicers.js/dataSlice";
 
 export const Login = () => {
-  const { setIsLogged } = useAuth();
+  const dispatch = useDispatch();
 
   const formik = useFormik({
     initialValues: {
@@ -37,14 +38,15 @@ export const Login = () => {
       const persistence = rememberMe ? browserLocalPersistence : browserSessionPersistence;
       try {
         await setPersistence(auth, persistence);
-        await signInWithEmailAndPassword(auth, email, password);
+        const authDetails = await signInWithEmailAndPassword(auth, email, password)
+        dispatch(setIsUserLoggedIn(true));
+        dispatch(setLoggedUserData(authDetails.user));
         toast.update(toastId, {
           render: "Successfully Signed In!",
           type: "success",
           isLoading: false,
-          autoClose: 5000,
+          autoClose: 1000,
         });
-        setIsLogged(true);
       } catch (error) {
         console.error("Error signing in:", error);
         toast.update(toastId, {
