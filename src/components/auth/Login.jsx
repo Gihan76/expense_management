@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   TextField,
   Button,
@@ -7,17 +7,28 @@ import {
   Typography,
   Paper,
   Box,
+  Link,
 } from "@mui/material";
 import { useFormik } from "formik";
 import * as yup from "yup";
-import { browserLocalPersistence, browserSessionPersistence, setPersistence, signInWithEmailAndPassword } from "firebase/auth";
+import {
+  browserLocalPersistence,
+  browserSessionPersistence,
+  setPersistence,
+  signInWithEmailAndPassword,
+} from "firebase/auth";
 import { auth } from "../../config/firebase";
 import { toast } from "react-toastify";
 import { useDispatch } from "react-redux";
-import { setIsUserLoggedIn, setLoggedUserData } from "../../redux/slicers.js/dataSlice";
+import {
+  setIsUserLoggedIn,
+  setLoggedUserData,
+} from "../../redux/slicers.js/dataSlice";
+import { ForgotPasswordPopUp } from "./ForgotPasswordPopUp";
 
 export const Login = () => {
   const dispatch = useDispatch();
+  const [isForgotPasswordPopUpOpen, setIsForgotPasswordPopUpOpen] = useState(false);
 
   const formik = useFormik({
     initialValues: {
@@ -58,6 +69,14 @@ export const Login = () => {
       }
     },
   });
+
+  const openForgotPasswordPopUp = () => {
+    setIsForgotPasswordPopUpOpen(true);
+  };
+
+  const closeForgotPasswordPopUp = () => {
+    setIsForgotPasswordPopUpOpen(false);
+  };
 
   return (
     <Box
@@ -118,15 +137,24 @@ export const Login = () => {
           >
             SIGN IN
           </Button>
-          <Typography
+          <Link
+            component="button"
+            type="button"
             variant="body2"
-            align="center"
-            sx={{ marginTop: 2, color: "primary", cursor: "pointer" }}
+            onClick={openForgotPasswordPopUp}
+            sx={{ marginTop: 2 }}
+            underline="none"
           >
-            Forgot your password?
-          </Typography>
+            Forgot password?
+          </Link>
         </form>
       </Paper>
+      {isForgotPasswordPopUpOpen && (
+        <ForgotPasswordPopUp
+          open={isForgotPasswordPopUpOpen}
+          onClose={closeForgotPasswordPopUp}
+        />
+      )}
     </Box>
   );
 };
