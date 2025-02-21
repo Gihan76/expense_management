@@ -8,6 +8,8 @@ import {
   Paper,
   Box,
   Link,
+  IconButton,
+  InputAdornment,
 } from "@mui/material";
 import { useFormik } from "formik";
 import * as yup from "yup";
@@ -25,10 +27,13 @@ import {
   setLoggedUserData,
 } from "../../redux/slicers.js/dataSlice";
 import { ForgotPasswordPopUp } from "./ForgotPasswordPopUp";
+import Visibility from '@mui/icons-material/Visibility';
+import VisibilityOff from '@mui/icons-material/VisibilityOff';
 
 export const Login = () => {
   const dispatch = useDispatch();
   const [isForgotPasswordPopUpOpen, setIsForgotPasswordPopUpOpen] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const formik = useFormik({
     initialValues: {
@@ -70,6 +75,14 @@ export const Login = () => {
     },
   });
 
+  const handleClickShowPassword = () => {
+    setShowPassword(!showPassword);
+  };
+
+  const handleMouseDownPassword = (event) => {
+    event.preventDefault();
+  };
+
   const openForgotPasswordPopUp = () => {
     setIsForgotPasswordPopUpOpen(true);
   };
@@ -84,11 +97,6 @@ export const Login = () => {
       justifyContent="center"
       alignItems="center"
       minHeight="100vh"
-      sx={{
-        backgroundImage: "url(/images/login-bg.webp)",
-        backgroundSize: "cover",
-        backgroundRepeat: "no-repeat",
-      }}
     >
       <Paper elevation={3} sx={{ padding: 4, width: 350 }}>
         <Typography variant="h5" align="center" gutterBottom>
@@ -112,11 +120,27 @@ export const Login = () => {
             variant="outlined"
             fullWidth
             margin="normal"
-            type="password"
+            type={showPassword ? "text" : "password"}
             value={formik.values.password}
             onChange={formik.handleChange}
             error={formik.touched.password && Boolean(formik.errors.password)}
             helperText={formik.touched.password && formik.errors.password}
+            slotProps={{
+              input: {
+                endAdornment: (
+                  <InputAdornment position="start">
+                    <IconButton
+                      aria-label="toggle password visibility"
+                      onClick={handleClickShowPassword}
+                      onMouseDown={handleMouseDownPassword}
+                      edge="end"
+                    >
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              },
+            }}
           />
           <FormControlLabel
             control={
@@ -135,7 +159,7 @@ export const Login = () => {
             fullWidth
             sx={{ marginTop: 2 }}
           >
-            SIGN IN
+            Sign In
           </Button>
           <Link
             component="button"

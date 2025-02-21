@@ -59,7 +59,7 @@ export const ExpensesTable = memo(() => {
       align: "left",
       headerAlign: "left",
       minWidth: 100,
-      maxWidth: 100,
+      maxWidth: 120,
       valueFormatter: (value) => {
         const milliseconds = value.seconds * 1000;
         const date = new Date(milliseconds);
@@ -115,7 +115,7 @@ export const ExpensesTable = memo(() => {
       align: "left",
       headerAlign: "left",
       minWidth: 120,
-      maxWidth: 120,
+      maxWidth: 150,
       valueFormatter: (value, rowData) => {
         // if modifiedBy value available show it, otherwise show createdBy
         if (rowData?.modifiedBy && user?.[rowData?.modifiedBy]) {
