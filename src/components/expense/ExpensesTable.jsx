@@ -115,7 +115,7 @@ export const ExpensesTable = memo(() => {
       align: "left",
       headerAlign: "left",
       minWidth: 120,
-      maxWidth: 150,
+      maxWidth: 170,
       valueFormatter: (value, rowData) => {
         // if modifiedBy value available show it, otherwise show createdBy
         if (rowData?.modifiedBy && user?.[rowData?.modifiedBy]) {

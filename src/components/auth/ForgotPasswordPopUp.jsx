@@ -65,7 +65,7 @@ export const ForgotPasswordPopUp = ({ open, onClose }) => {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={onClose} color="primary">
+          <Button onClick={onClose} color="primary" variant="outlined">
             Cancel
           </Button>
           <Button
@@ -74,7 +74,7 @@ export const ForgotPasswordPopUp = ({ open, onClose }) => {
             variant="contained"
             disabled={isBtnDisable}
           >
-            Continue
+            Submit
           </Button>
         </DialogActions>
       </form>

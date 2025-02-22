@@ -230,7 +230,7 @@ export const AddExpenseForm = () => {
       />
 
       <TextField
-        sx={{ mt: 1 }}
+        sx={{ mt: 1.5 }}
         fullWidth
         label="Price"
         name="price"
