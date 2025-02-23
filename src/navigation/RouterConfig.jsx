@@ -7,6 +7,7 @@ import { getIsUserLoggedIn } from "../redux/slicers.js/dataSlice";
 import { LandingPage } from "../components/landing/LandingPage";
 import { EXPENSES_PATH, INVENTORY_PATH, ROOT_PATH } from "../config/constants";
 import { UnderConstruction } from "../components/common/UnderConstruction";
+import { PageNotFound } from "../components/common/PageNotFound";
 
 export const RouterConfig = () => {
   const isLoggedIn = useSelector(getIsUserLoggedIn);
@@ -16,6 +17,9 @@ export const RouterConfig = () => {
       <Route path={ROOT_PATH} element={isLoggedIn ? <LandingPage /> : <Login />} />
       <Route path={EXPENSES_PATH} element={<Expenses />} />
       <Route path={INVENTORY_PATH} element={<UnderConstruction />} />
+
+      {/* Page Not Found */}
+      <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
 };
