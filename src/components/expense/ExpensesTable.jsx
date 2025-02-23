@@ -58,8 +58,7 @@ export const ExpensesTable = memo(() => {
       headerName: "Date",
       align: "left",
       headerAlign: "left",
-      minWidth: 100,
-      maxWidth: 120,
+      flex: 1,
       valueFormatter: (value) => {
         const milliseconds = value.seconds * 1000;
         const date = new Date(milliseconds);
@@ -75,16 +74,14 @@ export const ExpensesTable = memo(() => {
       headerName: "Expense",
       align: "left",
       headerAlign: "left",
-      minWidth: 170,
-      maxWidth: 300,
+      flex: 2,
     },
     {
       field: "category",
       headerName: "Type",
       align: "left",
       headerAlign: "left",
-      minWidth: 120,
-      maxWidth: 150,
+      flex: 1,
       valueFormatter: (value) => {
         return expenseCategories?.[value];
       },
@@ -94,8 +91,7 @@ export const ExpensesTable = memo(() => {
       headerName: "Notes",
       align: "left",
       headerAlign: "left",
-      minWidth: 220,
-      maxWidth: 300,
+      flex: 3,
     },
     {
       field: "price",
@@ -103,8 +99,7 @@ export const ExpensesTable = memo(() => {
       type: "number",
       align: "left",
       headerAlign: "left",
-      minWidth: 100,
-      maxWidth: 150,
+      flex: 1,
       valueFormatter: (value) => {
         return `Rs. ${value}`;
       },
@@ -114,8 +109,7 @@ export const ExpensesTable = memo(() => {
       headerName: "Expensed By",
       align: "left",
       headerAlign: "left",
-      minWidth: 120,
-      maxWidth: 170,
+      flex: 1,
       valueFormatter: (value, rowData) => {
         // if modifiedBy value available show it, otherwise show createdBy
         if (rowData?.modifiedBy && user?.[rowData?.modifiedBy]) {
@@ -129,8 +123,7 @@ export const ExpensesTable = memo(() => {
       field: "actions",
       headerName: "Actions",
       type: "actions",
-      minWidth: 110,
-      maxWidth: 110,
+      flex: 1,
       getActions: (params) => [
         <GridActionsCellItem
           icon={<VisibilityIcon color="info" />}
