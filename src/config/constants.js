@@ -10,3 +10,20 @@ export const CUSTOMER_FILTER_OPTIONS = [
     { value: 'month', label: 'Last Month' },
     { value: 'year', label: 'Last Year' },
 ];
+
+export const ROOT_PATH = "/";
+export const EXPENSES_PATH = "/expenses";
+export const INVENTORY_PATH = "/inventory";
+
+export const LANDING_TILES = [
+    {
+        title: "Expenses Management",
+        image: "landingTiles/expenses-management.jpeg",
+        link: "/expenses",
+    },
+    {
+        title: "Inventory Management",
+        image: "landingTiles/inventory-management.jpg",
+        link: "/inventory",
+    },
+];

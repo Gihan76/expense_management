@@ -20,6 +20,8 @@ import {
 } from "../../redux/slicers.js/dataSlice";
 import Brightness4Icon from "@mui/icons-material/Brightness4";
 import Brightness7Icon from "@mui/icons-material/Brightness7";
+import { useNavigate } from "react-router-dom";
+import { ROOT_PATH } from "../../config/constants";
 
 export const ThemeContext = createContext({
   mode: "dark",
@@ -28,6 +30,7 @@ export const ThemeContext = createContext({
 
 export const Header = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { mode, toggleMode } = useContext(ThemeContext);
   const [anchorEl, setAnchorEl] = useState(null);
   const isLoggedIn = useSelector(getIsUserLoggedIn);
@@ -64,7 +67,9 @@ export const Header = () => {
             flexGrow: 1,
             fontWeight: "bold",
             textAlign: { xs: "center", sm: "left" },
+            cursor: "pointer",
           }}
+          onClick={() => navigate(ROOT_PATH)}
         >
           Money Grid
         </Typography>
