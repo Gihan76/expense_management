@@ -18,23 +18,22 @@ import {
   getLoggedUserData,
   setIsUserLoggedIn,
 } from "../../redux/slicers.js/dataSlice";
-import Brightness4Icon from "@mui/icons-material/Brightness4";
-import Brightness7Icon from "@mui/icons-material/Brightness7";
+import ColorLensIcon from '@mui/icons-material/ColorLens';
 import { useNavigate } from "react-router-dom";
 import { ROOT_PATH } from "../../config/constants";
 
 export const ThemeContext = createContext({
-  mode: "dark",
-  toggleMode: () => {},
+  setTheme: () => {},
 });
 
 export const Header = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { mode, toggleMode } = useContext(ThemeContext);
+  const { setTheme } = useContext(ThemeContext);
   const [anchorEl, setAnchorEl] = useState(null);
   const isLoggedIn = useSelector(getIsUserLoggedIn);
   const loggedUserData = useSelector(getLoggedUserData);
+  const [themeMenuAnchorEl, setThemeMenuAnchorEl] = useState(null);
 
   const handleMenu = (event) => {
     setAnchorEl(event.currentTarget);
@@ -42,6 +41,19 @@ export const Header = () => {
 
   const handleClose = () => {
     setAnchorEl(null);
+  };
+
+  const handleThemeMenuOpen = (event) => {
+    setThemeMenuAnchorEl(event.currentTarget);
+  };
+
+  const handleThemeMenuClose = () => {
+    setThemeMenuAnchorEl(null);
+  };
+
+  const handleThemeChange = (theme) => {
+    setTheme(theme);
+    handleThemeMenuClose();
   };
 
   const handleLogOut = async () => {
@@ -74,9 +86,22 @@ export const Header = () => {
           Money Grid
         </Typography>
 
-        <IconButton onClick={toggleMode} color="inherit">
-          {mode === "dark" ? <Brightness7Icon /> : <Brightness4Icon />}
+        {/* theme toggle */}
+        <IconButton onClick={handleThemeMenuOpen} color="inherit">
+          <ColorLensIcon />
         </IconButton>
+        <Menu
+          anchorEl={themeMenuAnchorEl}
+          open={Boolean(themeMenuAnchorEl)}
+          onClose={handleThemeMenuClose}
+        >
+          <MenuItem onClick={() => handleThemeChange("light")}>Light</MenuItem>
+          <MenuItem onClick={() => handleThemeChange("dark")}>Dark</MenuItem>
+          <MenuItem onClick={() => handleThemeChange("pink")}>Light Pink</MenuItem>
+          <MenuItem onClick={() => handleThemeChange("darkPink")}>
+            Dark Pink
+          </MenuItem>
+        </Menu>
 
         {isLoggedIn && (
           <div>

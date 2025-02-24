@@ -11,28 +11,19 @@ import {
 } from "./redux/slicers.js/dataSlice";
 import { auth } from "./config/firebase";
 import { fetchConstants } from "./services/expenseServices";
-import { createTheme, ThemeProvider } from "@mui/material";
+import { ThemeProvider } from "@mui/material";
 import "./App.css";
+import themes from "./config/themeConfig";
 
 function App() {
   const dispatch = useDispatch();
   const isLoggedIn = useSelector(getIsUserLoggedIn);
-  const [mode, setMode] = useState("dark");
-
-  const toggleMode = () => {
-    setMode((prevMode) => (prevMode === "light" ? "dark" : "light"));
-  };
+  const [theme, setTheme] = useState("dark");
 
   const themeContextValue = {
-    mode,
-    toggleMode,
+    theme,
+    setTheme,
   };
-
-  const theme = createTheme({
-    palette: {
-      mode,
-    },
-  });
 
   // handle login session
   useEffect(() => {
@@ -49,7 +40,7 @@ function App() {
   }, []);
 
   return (
-    <ThemeProvider theme={theme}>
+    <ThemeProvider theme={themes[theme]}>
       <ThemeContext.Provider value={themeContextValue}>
         <div className="app-container">
           {isLoggedIn && <Header />}
