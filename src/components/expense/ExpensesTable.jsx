@@ -56,17 +56,15 @@ export const ExpensesTable = memo(() => {
     {
       field: "date",
       headerName: "Date",
+      type: "date",
       align: "left",
       headerAlign: "left",
       flex: 1,
       valueFormatter: (value) => {
-        const milliseconds = value.seconds * 1000;
-        const date = new Date(milliseconds);
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, "0");
-        const day = String(date.getDate()).padStart(2, "0");
-        const formattedDate = `${year}-${month}-${day}`;
-        return formattedDate;
+        if (value) {
+          return dayjs(value).format('YYYY-MM-DD')
+        }
+        return "";
       },
     },
     {
@@ -89,6 +87,7 @@ export const ExpensesTable = memo(() => {
     {
       field: "notes",
       headerName: "Notes",
+      filterable: false,
       align: "left",
       headerAlign: "left",
       flex: 3,
@@ -131,12 +130,7 @@ export const ExpensesTable = memo(() => {
           title="View"
           onClick={(event) => {
             event.stopPropagation();
-            const milliseconds =
-              params.row?.date?.seconds * 1000 +
-              params.row?.date?.nanoseconds / 1000000;
-            const formattedDate = new Date(milliseconds);
             const clonedParamsRow = { ...params.row };
-            clonedParamsRow.date = formattedDate;
             clonedParamsRow.mode = "view";
             dispatch(setExpenseFormData(clonedParamsRow));
           }}
@@ -147,12 +141,7 @@ export const ExpensesTable = memo(() => {
           title="Edit"
           onClick={(event) => {
             event.stopPropagation();
-            const milliseconds =
-              params.row?.date?.seconds * 1000 +
-              params.row?.date?.nanoseconds / 1000000;
-            const formattedDate = new Date(milliseconds);
             const clonedParamsRow = { ...params.row };
-            clonedParamsRow.date = formattedDate;
             clonedParamsRow.mode = "edit";
             dispatch(setExpenseFormData(clonedParamsRow));
           }}
@@ -180,30 +169,46 @@ export const ExpensesTable = memo(() => {
     if (selectedFilter === "all") {
       return tableData;
     }
-    const now = dayjs();
+    const now = new Date();
     let filterStart;
     switch (selectedFilter) {
       case "week":
-        filterStart = now.startOf("week");
+        filterStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 6);
         break;
       case "month":
-        filterStart = now.startOf("month");
+        let previousMonth = now.getMonth() - 1;
+        let previousYear = now.getFullYear();
+        if (previousMonth < 0) {
+          previousMonth = 11;
+          previousYear--;
+        }
+        filterStart = new Date(previousYear, previousMonth, now.getDate());
         break;
       case "year":
-        filterStart = now.startOf("year");
+        filterStart = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
         break;
       default:
         return tableData;
     }
     return tableData.filter((row) => {
-      const milliseconds =
-        row.date.seconds * 1000 + (row.date.nanoseconds / 1000000 || 0);
-      const rowDate = dayjs(milliseconds);
-      return rowDate.isSameOrAfter(filterStart, "day");
+      if (!row?.date) {
+        return false;
+      }
+      const rowDate = new Date(row.date);
+      const rowDateOnly = new Date(
+        rowDate.getFullYear(),
+        rowDate.getMonth(),
+        rowDate.getDate()
+      );
+      const filterStartOnly = new Date(
+        filterStart.getFullYear(),
+        filterStart.getMonth(),
+        filterStart.getDate()
+      );
+      return rowDateOnly >= filterStartOnly;
     });
   }, [tableData, selectedFilter]);
 
-  //  const totalPrice = tableData.reduce((sum, row) => sum + Number(row.price), 0);
   const totalPrice = useMemo(() => {
     return filteredData.reduce((sum, row) => sum + Number(row.price), 0);
   }, [filteredData]);
@@ -257,7 +262,11 @@ export const ExpensesTable = memo(() => {
   useEffect(() => {
     setIsLoading(true);
     const unsubscribe = fetchExpenses((data) => {
-      setTableData(data);
+      const formattedResponse = data?.map((d) => ({
+        ...d,
+        date: d?.date?.toDate(),
+      }));
+      setTableData(formattedResponse);
       setIsLoading(false);
     }, {});
     return () => {
@@ -303,7 +312,6 @@ export const ExpensesTable = memo(() => {
         rows={filteredData}
         columns={columns}
         loading={isLoading}
-        disableColumnFilter
         disableRowSelectionOnClick
         paginationModel={paginationModel}
         onPaginationModelChange={setPaginationModel}
