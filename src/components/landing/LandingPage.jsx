@@ -6,7 +6,7 @@ import { ThemeContext } from '../common/Header';
 
 export const LandingPage = () => {
     const navigate = useNavigate();
-    const { mode } = useContext(ThemeContext);
+    const { theme } = useContext(ThemeContext);
 
   return (
     <Grid2 container spacing={3} justifyContent="center" sx={{ p: 3 }}>
@@ -37,9 +37,9 @@ export const LandingPage = () => {
                 >
                   <Typography
                     variant="h4"
-                    color={mode === "light" ? "white" : "black"}
+                    color={theme === "light" ? "white" : "black"}
                     sx={{
-                      textShadow: mode === "light" ? "0 0 10px black, 0 0 20px black" : "0 0 10px white, 0 0 20px white",
+                      textShadow: theme === "light" ? "0 0 10px black, 0 0 20px black" : "0 0 10px white, 0 0 20px white",
                       fontWeight: "bold",
                     }}
                   >
