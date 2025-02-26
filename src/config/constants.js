@@ -27,3 +27,10 @@ export const LANDING_TILES = [
         link: "/inventory",
     },
 ];
+
+export const THEME_COLORS = [
+    { id: "light", name: 'Light', color: '#ffffff' },
+    { id: "dark", name: 'Dark', color: '#262626' },
+    { id: "pink", name: 'Pink', color: '#e91e63' },
+    { id: "darkPink", name: 'Dark Pink', color: '#f599b8' },
+]

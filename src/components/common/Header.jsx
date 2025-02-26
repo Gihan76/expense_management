@@ -7,6 +7,8 @@ import {
   MenuItem,
   Menu,
   Tooltip,
+  ListItemIcon,
+  Box,
 } from "@mui/material";
 import AccountCircle from "@mui/icons-material/AccountCircle";
 import { signOut } from "firebase/auth";
@@ -20,7 +22,7 @@ import {
 } from "../../redux/slicers.js/dataSlice";
 import ColorLensIcon from '@mui/icons-material/ColorLens';
 import { useNavigate } from "react-router-dom";
-import { ROOT_PATH } from "../../config/constants";
+import { ROOT_PATH, THEME_COLORS } from "../../config/constants";
 
 export const ThemeContext = createContext({
   setTheme: () => {},
@@ -76,7 +78,6 @@ export const Header = () => {
           variant="h6"
           component="div"
           sx={{
-            flexGrow: 1,
             fontWeight: "bold",
             textAlign: { xs: "center", sm: "left" },
             cursor: "pointer",
@@ -85,6 +86,8 @@ export const Header = () => {
         >
           Money Grid
         </Typography>
+
+        <div style={{ flexGrow: 1 }}></div>
 
         {/* theme toggle */}
         <IconButton onClick={handleThemeMenuOpen} color="inherit">
@@ -95,12 +98,25 @@ export const Header = () => {
           open={Boolean(themeMenuAnchorEl)}
           onClose={handleThemeMenuClose}
         >
-          <MenuItem onClick={() => handleThemeChange("light")}>Light</MenuItem>
-          <MenuItem onClick={() => handleThemeChange("dark")}>Dark</MenuItem>
-          <MenuItem onClick={() => handleThemeChange("pink")}>Light Pink</MenuItem>
-          <MenuItem onClick={() => handleThemeChange("darkPink")}>
-            Dark Pink
-          </MenuItem>
+          {THEME_COLORS.map((theme) => (
+            <MenuItem
+              key={theme.name}
+              onClick={() => handleThemeChange(theme.id)}
+            >
+              <ListItemIcon>
+                <Box
+                  sx={{
+                    width: "16px",
+                    height: "16px",
+                    border: `0.5px solid ${theme.id.includes('dark') ? 'white' : 'black'}`,
+                    borderRadius: "50%",
+                    backgroundColor: theme.color,
+                  }}
+                />
+              </ListItemIcon>
+              {theme.name}
+            </MenuItem>
+          ))}
         </Menu>
 
         {isLoggedIn && (
