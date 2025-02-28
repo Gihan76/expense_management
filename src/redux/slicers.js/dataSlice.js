@@ -2,7 +2,6 @@ import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
     settings: {},
-    expenseFormData: {},
     isUserLoggedIn: false,
     loggedUserData: null,
 }
@@ -13,9 +12,6 @@ export const dataSlice = createSlice({
     reducers: {
         setSettingsData: (state, action) => {
             state.settings = action.payload;
-        },
-        setExpenseFormData: (state, action) => {
-            state.expenseFormData = action.payload;
         },
         setIsUserLoggedIn: (state, action) => {
             state.isUserLoggedIn = action.payload;
@@ -28,13 +24,11 @@ export const dataSlice = createSlice({
 
 export const {
     setSettingsData,
-    setExpenseFormData,
     setIsUserLoggedIn,
     setLoggedUserData,
 } = dataSlice.actions;
 
 export const getSettings = (state) => state.expenseData.settings;
-export const getExpenseFormData = (state) => state.expenseData.expenseFormData;
 export const getIsUserLoggedIn = (state) => state.expenseData.isUserLoggedIn;
 export const getLoggedUserData = (state) => state.expenseData.loggedUserData;
 

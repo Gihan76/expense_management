@@ -71,7 +71,7 @@ export const Header = () => {
     <AppBar
       position="static"
       enableColorOnDark
-      style={{ height: "40px", justifyContent: "center" }}
+      style={{ height: "40px", justifyContent: "center", marginBottom: 20 }}
     >
       <Toolbar>
         <Typography

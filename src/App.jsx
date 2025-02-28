@@ -14,7 +14,6 @@ import { fetchConstants } from "./services/expenseServices";
 import { ThemeProvider } from "@mui/material";
 import "./App.css";
 import themes from "./config/themeConfig";
-import { BreadcrumbsComp } from "./components/common/BreadcrumbsComp";
 
 function App() {
   const dispatch = useDispatch();
@@ -45,7 +44,6 @@ function App() {
       <ThemeContext.Provider value={themeContextValue}>
         <div className="app-container">
           {isLoggedIn && <Header />}
-          <BreadcrumbsComp />
           <RouterConfig />
         </div>
         <ToastContainer

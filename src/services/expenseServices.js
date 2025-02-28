@@ -39,6 +39,23 @@ export const fetchExpenses = async (callback) => {
     }
 };
 
+// fetch expenses by id
+export const fetchExpensesById = async (docId = null) => {
+    try {
+        const docRef = doc(db, 'expenses', docId);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+            return docSnap?.data();
+        } else {
+            return null;
+        }
+    } catch (error) {
+        console.error(`Something went wrong while fetching expense data for ${docId} => `,error);
+        return null;
+    }
+};
+
 
 // add setting constants
 export const createExpense = async (values = {}) => {

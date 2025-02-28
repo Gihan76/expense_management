@@ -4,3 +4,6 @@ export const CreateDropdownData = (obj) => {
         value: key,
     }));
 };
+
+export const encodedSlug = (value) => btoa(value);
+export const decodedSlug = (value) => atob(value);

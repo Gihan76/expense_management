@@ -14,17 +14,18 @@ export const CUSTOMER_FILTER_OPTIONS = [
 export const ROOT_PATH = "/";
 export const EXPENSES_PATH = "/expenses";
 export const INVENTORY_PATH = "/inventory";
+export const LIST_EXPENSES_PATH = `${EXPENSES_PATH}/manage`;
 
 export const LANDING_TILES = [
     {
         title: "Expenses Management",
         image: "landingTiles/expenses-management.jpeg",
-        link: "/expenses",
+        link: EXPENSES_PATH,
     },
     {
         title: "Inventory Management",
         image: "landingTiles/inventory-management.jpg",
-        link: "/inventory",
+        link: INVENTORY_PATH,
     },
 ];
 
@@ -33,4 +34,21 @@ export const THEME_COLORS = [
     { id: "dark", name: 'Dark', color: '#262626' },
     { id: "pink", name: 'Pink', color: '#e91e63' },
     { id: "darkPink", name: 'Dark Pink', color: '#f599b8' },
+];
+
+export const EXPENSE_PAGE_ACTIONS = [
+    {
+        title: "View Expenses",
+        logo: "/expenses/view_expense.png",
+        navigateTo: LIST_EXPENSES_PATH,
+        roles: ['administrator', 'moderator'],
+        isDisabled: false,
+    },
+    {
+        title: "Create Expense",
+        logo: "/expenses/create_expense.png",
+        navigateTo: `${LIST_EXPENSES_PATH}/create`,
+        roles: ['administrator', 'moderator'],
+        isDisabled: false,
+    },
 ]

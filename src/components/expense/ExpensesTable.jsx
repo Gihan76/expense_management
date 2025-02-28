@@ -9,11 +9,11 @@ import React, { memo, useEffect, useMemo, useState } from "react";
 import { deleteExpense, fetchExpenses } from "../../services/expenseServices";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
+import AddCircleIcon from '@mui/icons-material/AddCircle';
 import VisibilityIcon from "@mui/icons-material/Visibility";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import {
   getSettings,
-  setExpenseFormData,
 } from "../../redux/slicers.js/dataSlice";
 import {
   Box,
@@ -26,17 +26,20 @@ import {
   FormControl,
   InputLabel,
   MenuItem,
+  Paper,
   Select,
   Typography,
 } from "@mui/material";
-import { CUSTOMER_FILTER_OPTIONS } from "../../config/constants";
+import { CUSTOMER_FILTER_OPTIONS, LIST_EXPENSES_PATH } from "../../config/constants";
 import dayjs from "dayjs";
 import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
+import { encodedSlug } from "../../utils/common";
 dayjs.extend(isSameOrAfter);
 
 export const ExpensesTable = memo(() => {
-  const dispatch = useDispatch();
+  const navigate = useNavigate();
   const settings = useSelector(getSettings);
   const { expenseCategories, user } = settings;
   const [tableData, setTableData] = useState([]);
@@ -46,7 +49,7 @@ export const ExpensesTable = memo(() => {
   const [paginationModel, setPaginationModel] = useState({
     pageSize: 25,
     page: 0,
-  })
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [isDeletePopUpOpen, setIsDeletePopUpOpen] = useState(false);
   const [rowToDelete, setRowToDelete] = useState(null);
@@ -62,7 +65,7 @@ export const ExpensesTable = memo(() => {
       flex: 1,
       valueFormatter: (value) => {
         if (value) {
-          return dayjs(value).format('YYYY-MM-DD')
+          return dayjs(value).format("YYYY-MM-DD");
         }
         return "";
       },
@@ -130,9 +133,8 @@ export const ExpensesTable = memo(() => {
           title="View"
           onClick={(event) => {
             event.stopPropagation();
-            const clonedParamsRow = { ...params.row };
-            clonedParamsRow.mode = "view";
-            dispatch(setExpenseFormData(clonedParamsRow));
+            const encodedId = encodedSlug(params.id);
+            navigate(`${LIST_EXPENSES_PATH}/view/${encodedId}`);
           }}
         />,
         <GridActionsCellItem
@@ -141,9 +143,8 @@ export const ExpensesTable = memo(() => {
           title="Edit"
           onClick={(event) => {
             event.stopPropagation();
-            const clonedParamsRow = { ...params.row };
-            clonedParamsRow.mode = "edit";
-            dispatch(setExpenseFormData(clonedParamsRow));
+            const encodedId = encodedSlug(params.id);
+            navigate(`${LIST_EXPENSES_PATH}/edit/${encodedId}`);
           }}
         />,
         <GridActionsCellItem
@@ -173,7 +174,11 @@ export const ExpensesTable = memo(() => {
     let filterStart;
     switch (selectedFilter) {
       case "week":
-        filterStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 6);
+        filterStart = new Date(
+          now.getFullYear(),
+          now.getMonth(),
+          now.getDate() - 6
+        );
         break;
       case "month":
         let previousMonth = now.getMonth() - 1;
@@ -185,7 +190,11 @@ export const ExpensesTable = memo(() => {
         filterStart = new Date(previousYear, previousMonth, now.getDate());
         break;
       case "year":
-        filterStart = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+        filterStart = new Date(
+          now.getFullYear() - 1,
+          now.getMonth(),
+          now.getDate()
+        );
         break;
       default:
         return tableData;
@@ -212,7 +221,7 @@ export const ExpensesTable = memo(() => {
   const totalPrice = useMemo(() => {
     return filteredData.reduce((sum, row) => sum + Number(row.price), 0);
   }, [filteredData]);
-  
+
   const customFooter = () => (
     <GridFooterContainer>
       <div
@@ -224,7 +233,9 @@ export const ExpensesTable = memo(() => {
           marginLeft: "10px",
         }}
       >
-        <Typography sx={{ fontWeight: 400, fontSize: "0.875rem" , whiteSpace: "nowrap"}}>
+        <Typography
+          sx={{ fontWeight: 400, fontSize: "0.875rem", whiteSpace: "nowrap" }}
+        >
           Total Expenses:{" "}
           <span style={{ color: "red", fontWeight: "bold" }}>
             Rs. {totalPrice.toFixed(2)}
@@ -277,87 +288,101 @@ export const ExpensesTable = memo(() => {
   }, []);
 
   return (
-    <div style={{ height: "100%", width: "100%" }}>
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          mb: 2,
-        }}
-      >
-        <Typography variant="h6" sx={{ fontWeight: "bold" }}>
-          Expenses
-        </Typography>
+    <Paper elevation={3} sx={{ padding: 2 }}>
+      <div style={{ height: "100%", width: "100%" }}>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            mb: 2,
+          }}
+        >
+          <Box sx={{ display: "flex", alignItems: "center" }}>
+            <Typography variant="h6" sx={{ fontWeight: "bold",  mr: 1 }}>
+              Expenses
+            </Typography>
+            <Button
+              variant="contained"
+              color="warning"
+              size="small"
+              startIcon={<AddCircleIcon />}
+              style={{ marginLeft: "10px", textTransform: "none" }}
+              onClick={() => navigate(`${LIST_EXPENSES_PATH}/create`)}
+            >
+              Create
+            </Button>
+          </Box>
 
-        <FormControl size="small" sx={{width: "150px"}}>
-          <InputLabel id="filter-label">Filter By</InputLabel>
-          <Select
-            labelId="filter-label"
-            id="filter"
-            value={selectedFilter}
-            label="Filter By"
-            onChange={(e) => setSelectedFilter(e.target.value)}
-          >
-            {CUSTOMER_FILTER_OPTIONS.map((option) => (
-              <MenuItem key={option.value} value={option.value}>
-                {option.label}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-      </Box>
+          <FormControl size="small" sx={{ width: "150px" }}>
+            <InputLabel id="filter-label">Filter By</InputLabel>
+            <Select
+              labelId="filter-label"
+              id="filter"
+              value={selectedFilter}
+              label="Filter By"
+              onChange={(e) => setSelectedFilter(e.target.value)}
+            >
+              {CUSTOMER_FILTER_OPTIONS.map((option) => (
+                <MenuItem key={option.value} value={option.value}>
+                  {option.label}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Box>
 
-      <DataGrid
-        rows={filteredData}
-        columns={columns}
-        loading={isLoading}
-        disableRowSelectionOnClick
-        paginationModel={paginationModel}
-        onPaginationModelChange={setPaginationModel}
-        pageSizeOptions={[25, 50, 100, { value: -1, label: "All" }]}
-        sortModel={sortByColumn}
-        onSortModelChange={handleSortByColumnChange}
-        slots={{
-          footer: customFooter, // custom total footer
-          toolbar: GridToolbar, // default toolbar at the top of table
-        }}
-        slotProps={{
-          toolbar: {
-            showQuickFilter: true, // search bar
-          },
-          loadingOverlay: {
-            // circular loader until records get loaded
-            variant: "circular-progress",
-            noRowsVariant: "circular-progress",
-          },
-        }}
-      />
+        <DataGrid
+          rows={filteredData}
+          columns={columns}
+          loading={isLoading}
+          disableRowSelectionOnClick
+          paginationModel={paginationModel}
+          onPaginationModelChange={setPaginationModel}
+          pageSizeOptions={[25, 50, 100, { value: -1, label: "All" }]}
+          sortModel={sortByColumn}
+          onSortModelChange={handleSortByColumnChange}
+          slots={{
+            footer: customFooter, // custom total footer
+            toolbar: GridToolbar, // default toolbar at the top of table
+          }}
+          slotProps={{
+            toolbar: {
+              showQuickFilter: true, // search bar
+            },
+            loadingOverlay: {
+              // circular loader until records get loaded
+              variant: "circular-progress",
+              noRowsVariant: "circular-progress",
+            },
+          }}
+        />
 
-      {/* delete row pop up */}
-      <Dialog open={isDeletePopUpOpen} onClose={handleDeletePopUpClose}>
-        <DialogTitle>Confirm Delete</DialogTitle>
+        {/* delete row pop up */}
+        <Dialog open={isDeletePopUpOpen} onClose={handleDeletePopUpClose}>
+          <DialogTitle>Confirm Delete</DialogTitle>
 
-        <DialogContent>
-          <DialogContentText>
-            Are you sure you want to delete this expense?
-          </DialogContentText>
-        </DialogContent>
+          <DialogContent>
+            <DialogContentText>
+              Are you sure you want to delete this expense?
+            </DialogContentText>
+          </DialogContent>
 
-        <DialogActions>
-          <Button onClick={handleDeletePopUpClose} variant="contained">
-            No
-          </Button>
-          <Button
-            onClick={() => handleDeleteRow(rowToDelete)}
-            variant="outlined"
-            color="error"
-            autoFocus
-          >
-            Yes
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </div>
+          <DialogActions>
+            <Button onClick={handleDeletePopUpClose} variant="contained">
+              No
+            </Button>
+            <Button
+              onClick={() => handleDeleteRow(rowToDelete)}
+              variant="outlined"
+              color="error"
+              autoFocus
+            >
+              Yes
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </div>
+    </Paper>
   );
 });
