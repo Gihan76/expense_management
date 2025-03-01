@@ -63,6 +63,7 @@ export const ExpensesTable = memo(() => {
       align: "left",
       headerAlign: "left",
       flex: 1,
+      minWidth: 110,
       valueFormatter: (value) => {
         if (value) {
           return dayjs(value).format("YYYY-MM-DD");
@@ -76,6 +77,7 @@ export const ExpensesTable = memo(() => {
       align: "left",
       headerAlign: "left",
       flex: 2,
+      minWidth: 130,
     },
     {
       field: "category",
@@ -83,6 +85,7 @@ export const ExpensesTable = memo(() => {
       align: "left",
       headerAlign: "left",
       flex: 1,
+      minWidth: 110,
       valueFormatter: (value) => {
         return expenseCategories?.[value];
       },
@@ -94,6 +97,7 @@ export const ExpensesTable = memo(() => {
       align: "left",
       headerAlign: "left",
       flex: 3,
+      minWidth: 120,
     },
     {
       field: "price",
@@ -102,6 +106,7 @@ export const ExpensesTable = memo(() => {
       align: "left",
       headerAlign: "left",
       flex: 1,
+      minWidth: 110,
       valueFormatter: (value) => {
         return `Rs. ${value}`;
       },
@@ -112,6 +117,7 @@ export const ExpensesTable = memo(() => {
       align: "left",
       headerAlign: "left",
       flex: 1,
+      minWidth: 160,
       valueFormatter: (value, rowData) => {
         // if modifiedBy value available show it, otherwise show createdBy
         if (rowData?.modifiedBy && user?.[rowData?.modifiedBy]) {
@@ -126,6 +132,7 @@ export const ExpensesTable = memo(() => {
       headerName: "Actions",
       type: "actions",
       flex: 1,
+      minWidth: 110,
       getActions: (params) => [
         <GridActionsCellItem
           icon={<VisibilityIcon color="info" />}
