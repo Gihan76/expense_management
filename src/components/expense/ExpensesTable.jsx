@@ -9,12 +9,10 @@ import React, { memo, useEffect, useMemo, useState } from "react";
 import { deleteExpense, fetchExpenses } from "../../services/expenseServices";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
-import AddCircleIcon from '@mui/icons-material/AddCircle';
+import AddCircleIcon from "@mui/icons-material/AddCircle";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import { useSelector } from "react-redux";
-import {
-  getSettings,
-} from "../../redux/slicers.js/dataSlice";
+import { getSettings } from "../../redux/slicers.js/dataSlice";
 import {
   Box,
   Button,
@@ -30,7 +28,10 @@ import {
   Select,
   Typography,
 } from "@mui/material";
-import { CUSTOMER_FILTER_OPTIONS, LIST_EXPENSES_PATH } from "../../config/constants";
+import {
+  CUSTOMER_FILTER_OPTIONS,
+  LIST_EXPENSES_PATH,
+} from "../../config/constants";
 import dayjs from "dayjs";
 import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import { toast } from "react-toastify";
@@ -306,7 +307,7 @@ export const ExpensesTable = memo(() => {
           }}
         >
           <Box sx={{ display: "flex", alignItems: "center" }}>
-            <Typography variant="h6" sx={{ fontWeight: "bold",  mr: 1 }}>
+            <Typography variant="h6" sx={{ fontWeight: "bold", mr: 1 }}>
               Expenses
             </Typography>
             <Button
@@ -340,6 +341,9 @@ export const ExpensesTable = memo(() => {
         </Box>
 
         <DataGrid
+          initialState={{
+            density: "compact",
+          }}
           rows={filteredData}
           columns={columns}
           loading={isLoading}
